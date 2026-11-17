@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retention Auto-Clipper Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              accent: '#f59e0b',
+              neon: '#00ffcc',
+              shield: '#10b981'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #030712 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .glass {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .neon-border:focus-within {
+      box-shadow: 0 0 15px rgba(45, 212, 191, 0.35);
+      border-color: #2dd4bf;
+    }
+    .vertical-phone {
+      aspect-ratio: 9 / 16;
+      max-width: 320px;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <!-- TOP NAV -->
+  <header class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between pb-6 mb-8 border-b border-slate-800 gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+        <i class="fa-solid fa-bolt text-2xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-teal-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent">
+          RETENTION CLIPPER
+        </h1>
+        <p class="text-xs text-slate-400 font-medium">Auto Viral Short-Form Engine • Free Local Open-Source AI</p>
+      </div>
+    </div>
+
+    <!-- STATUS BADGES -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+        <i class="fa-solid fa-shield-halved text-sm"></i>
+        <span>Anti-Copyright Shield: Active</span>
+      </div>
+      <div id="cudaBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-xs">
+        <i class="fa-solid fa-microchip text-teal-400"></i>
+        <span id="cudaText">Checking GPU...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- LEFT COLUMN: INGESTION & CONTROLS (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+
+      <!-- STEP 1: INGESTION CARD -->
+      <div class="glass rounded-2xl p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+            <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 text-xs flex items-center justify-center font-black">1</span>
+            Import Video
+          </h2>
+          <span class="text-xs text-slate-400">YouTube, Twitch, or Local File</span>
+        </div>
+
+        <!-- TABS -->
+        <div class="flex border-b border-slate-700/60 mb-5">
+          <button id="tabUrlBtn" onclick="switchTab('url')" class="pb-2.5 px-4 font-semibold text-sm border-b-2 border-teal-400 text-teal-300 transition">
+            <i class="fa-solid fa-link mr-1.5"></i> Video Link
+          </button>
+          <button id="tabFileBtn" onclick="switchTab('file')" class="pb-2.5 px-4 font-medium text-sm text-slate-400 hover:text-slate-200 transition">
+            <i class="fa-solid fa-file-video mr-1.5"></i> Local File
+          </button>
+        </div>
+
+        <!-- URL INPUT TAB -->
+        <div id="tabUrl" class="space-y-4">
+          <div class="neon-border rounded-xl border border-slate-700 bg-slate-900/80 flex items-center p-2.5 transition">
+            <i class="fa-brands fa-youtube text-red-500 text-xl mx-2"></i>
+            <input type="text" id="videoUrlInput" placeholder="Paste YouTube or video link here..."
+                   class="bg-transparent border-0 flex-1 text-sm text-white focus:outline-none placeholder-slate-500">
+          </div>
+          <button onclick="handleUrlIngest()" id="fetchBtn"
+                  class="w-full py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-slate-950 shadow-lg shadow-teal-500/25 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Fetch & Analyze Viral Hooks</span>
+          </button>
+        </div>
+
+        <!-- FILE UPLOAD TAB -->
+        <div id="tabFile" class="hidden space-y-4">
+          <label class="border-2 border-dashed border-slate-700 hover:border-teal-400 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer bg-slate-900/50 hover:bg-slate-900/80 transition group">
+            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-500 group-hover:text-teal-400 mb-2 transition"></i>
+            <span class="text-sm font-semibold text-slate-300">Choose video file or drag here</span>
+            <span class="text-xs text-slate-500 mt-1">MP4, MOV, MKV, WebM</span>
+            <input type="file" id="fileInput" accept="video/*" class="hidden" onchange="handleFileUpload(event)">
+          </label>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div id="progressBarContainer" class="hidden mt-4 pt-4 border-t border-slate-800">
+          <div class="flex justify-between text-xs text-slate-300 mb-1.5">
+            <span id="progressText" class="flex items-center gap-2">
+              <i class="fa-solid fa-spinner fa-spin text-teal-400"></i>
+              Processing...
+            </span>
+            <span id="progressPct" class="font-bold text-teal-400">0%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="progressBar" class="bg-gradient-to-r from-teal-400 to-indigo-500 h-2 rounded-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <!-- IMPORTED MEDIA INFO -->
+        <div id="mediaInfoCard" class="hidden mt-5 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-3.5">
+          <img id="mediaThumb" src="" alt="Thumbnail" class="w-16 h-12 object-cover rounded-lg border border-slate-700">
+          <div class="overflow-hidden flex-1">
+            <h4 id="mediaTitle" class="text-xs font-bold text-slate-200 truncate">Video Title</h4>
+            <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
+              <span id="mediaDuration"><i class="fa-regular fa-clock mr-1"></i>--</span>
+              <span>•</span>
+              <span id="mediaRes"><i class="fa-solid fa-expand mr-1"></i>--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: STUDIO CONFIGURATION CARD -->
+      <div class="glass rounded-2xl p-6 shadow-xl space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+            <span class="w-6 h-6 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-black">2</span>
+            Studio Settings
+          </h2>
+          <span class="text-xs text-indigo-400 font-semibold">9:16 Shorts / Reels / TikTok</span>
+        </div>
+
+        <!-- REFRAME MODE SELECTOR -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+            9:16 Vertical Reframing Layout
+          </label>
+          <div class="grid grid-cols-3 gap-2.5">
+            <label class="cursor-pointer border border-teal-500/80 bg-teal-500/10 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt" onclick="selectReframe(this, 'blur_padding')">
+              <i class="fa-solid fa-shapes text-teal-400 text-lg mb-1"></i>
+              <span class="text-xs font-bold text-teal-300">Blurred Fit</span>
+              <span class="text-[10px] text-slate-400">Recommended</span>
+            </label>
+            <label class="cursor-pointer border border-slate-700 bg-slate-900/60 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt" onclick="selectReframe(this, 'smart_crop')">
+              <i class="fa-solid fa-crop text-slate-400 text-lg mb-1"></i>
+              <span class="text-xs font-bold text-slate-300">Center Crop</span>
+              <span class="text-[10px] text-slate-400">Full Height</span>
+            </label>
+            <label class="cursor-pointer border border-slate-700 bg-slate-900/60 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt" onclick="selectReframe(this, 'split_screen')">
+              <i class="fa-solid fa-table-columns text-slate-400 text-lg mb-1"></i>
+              <span class="text-xs font-bold text-slate-300">Split Screen</span>
+              <span class="text-[10px] text-slate-400">Top / Bottom</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ANTI-COPYRIGHT SHIELD PRESET -->
+        <div class="pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-shield-virus text-emerald-400"></i>
+              Anti-Copyright Strike Engine
+            </label>
+            <span class="text-[11px] text-emerald-400 font-semibold">Content ID Bypass</span>
+          </div>
+
+          <div class="space-y-2">
+            <label class="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 cursor-pointer shield-opt" onclick="selectShield(this, 'subtle')">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="shieldPreset" value="subtle" checked class="text-emerald-500 focus:ring-0">
+                <div>
+                  <div class="text-xs font-bold text-slate-200">Subtle Shield (Recommended)</div>
+                  <div class="text-[11px] text-slate-400">Pitch +1.5%, tempo 1.02x, color grade, strips metadata</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">SAFEST</span>
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl border border-slate-700 bg-slate-900/50 cursor-pointer shield-opt" onclick="selectShield(this, 'balanced')">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="shieldPreset" value="balanced" class="text-emerald-500 focus:ring-0">
+                <div>
+                  <div class="text-xs font-bold text-slate-200">Balanced Protection</div>
+                  <div class="text-[11px] text-slate-400">Pitch +2.5%, tempo 1.035x, 2.5% micro-zoom, saturation boost</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">BALANCED</span>
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl border border-slate-700 bg-slate-900/50 cursor-pointer shield-opt" onclick="selectShield(this, 'aggressive')">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="shieldPreset" value="aggressive" class="text-emerald-500 focus:ring-0">
+                <div>
+                  <div class="text-xs font-bold text-slate-200">Aggressive Bypass</div>
+                  <div class="text-[11px] text-slate-400">Pitch -2.5%, tempo 1.05x, 4% micro-zoom, ambient lofi bed</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold">HEAVY</span>
+            </label>
+
+            <label class="flex items-center justify-between p-3 rounded-xl border border-slate-700 bg-slate-900/50 cursor-pointer shield-opt" onclick="selectShield(this, 'off')">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="shieldPreset" value="off" class="text-slate-500 focus:ring-0">
+                <div>
+                  <div class="text-xs font-bold text-slate-400">Off (Raw Audio/Video)</div>
+                  <div class="text-[11px] text-slate-500">No pitch/tempo alterations applied</div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: CLIPS GALLERY & PREVIEW (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+
+      <!-- CLIPS CONTAINER -->
+      <div class="glass rounded-2xl p-6 shadow-xl min-h-[480px]">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div>
+            <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i>
+              Viral High-Retention Clips
+            </h2>
+            <p class="text-xs text-slate-400">Ranked by Speech Cadence, Hook Strength & Audio Energy</p>
+          </div>
+          <span id="clipsCountBadge" class="hidden px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold">
+            0 Clips Found
+          </span>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="emptyClipsState" class="flex flex-col items-center justify-center py-20 text-center text-slate-500">
+          <div class="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-clapperboard text-2xl text-slate-400"></i>
+          </div>
+          <h3 class="text-sm font-semibold text-slate-300">No Clips Extracted Yet</h3>
+          <p class="text-xs max-w-sm mt-1">Import a video link or drop a file on the left to start automatic local speech recognition & viral moment detection.</p>
+        </div>
+
+        <!-- CLIPS LIST -->
+        <div id="clipsGrid" class="hidden space-y-4 mt-5">
+          <!-- Dynamic Clip Cards Injected Here -->
+        </div>
+
+      </div>
+
+      <!-- PREVIEW MODAL / BOTTOM STUDIO -->
+      <div id="previewCard" class="hidden glass rounded-2xl p-6 shadow-xl border-teal-500/40">
+        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-teal-400 animate-ping"></span>
+            <h3 class="text-base font-bold text-slate-100">Ready 9:16 Short Clip</h3>
+          </div>
+          <a id="downloadClipBtn" href="#" download
+             class="py-2 px-4 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 text-slate-950 font-bold text-xs hover:opacity-90 transition flex items-center gap-2">
+            <i class="fa-solid fa-download"></i>
+            <span>Download 9:16 MP4</span>
+          </a>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-6">
+          <!-- Vertical Video Player -->
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700 bg-black vertical-phone">
+            <video id="renderedPlayer" controls playsinline class="w-full h-full object-cover"></video>
+          </div>
+
+          <div class="flex-1 space-y-3">
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-2">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Format:</span>
+                <span class="font-bold text-slate-200">9:16 Vertical (1080x1920)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Subtitles:</span>
+                <span class="font-bold text-amber-300">Active Neon Karaoke Burned</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Anti-Copyright Shield:</span>
+                <span id="renderedShieldText" class="font-bold text-emerald-400">Active (Pitch + Tempo + Scrub)</span>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-slate-400 leading-relaxed">
+              Ready for immediate upload to <strong>YouTube Shorts</strong>, <strong>Instagram Reels</strong>, and <strong>TikTok</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    let activeMediaId = null;
+    let selectedReframe = "blur_padding";
+    let selectedShield = "subtle";
+    let detectedClips = [];
+
+    // Health Check on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        const badge = document.getElementById('cudaText');
+        if (data.cuda_available) {
+          badge.textContent = `NVIDIA CUDA Active (${data.device})`;
+          badge.parentElement.classList.add('border-teal-500/40', 'bg-teal-500/10');
+        } else {
+          badge.textContent = 'CPU Mode';
+        }
+      } catch (err) {
+        console.warn('Health check warning:', err);
+      }
+    });
+
+    function switchTab(tab) {
+      const urlBtn = document.getElementById('tabUrlBtn');
+      const fileBtn = document.getElementById('tabFileBtn');
+      const urlSection = document.getElementById('tabUrl');
+      const fileSection = document.getElementById('tabFile');
+
+      if (tab === 'url') {
+        urlBtn.className = "pb-2.5 px-4 font-semibold text-sm border-b-2 border-teal-400 text-teal-300 transition";
+        fileBtn.className = "pb-2.5 px-4 font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+        urlSection.classList.remove('hidden');
+        fileSection.classList.add('hidden');
+      } else {
+        fileBtn.className = "pb-2.5 px-4 font-semibold text-sm border-b-2 border-teal-400 text-teal-300 transition";
+        urlBtn.className = "pb-2.5 px-4 font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+        fileSection.classList.remove('hidden');
+        urlSection.classList.add('hidden');
+      }
+    }
+
+    function selectReframe(element, mode) {
+      document.querySelectorAll('.ref-opt').forEach(el => {
+        el.className = 'cursor-pointer border border-slate-700 bg-slate-900/60 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt';
+      });
+      element.className = 'cursor-pointer border border-teal-500/80 bg-teal-500/10 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt';
+      selectedReframe = mode;
+    }
+
+    function selectShield(element, preset) {
+      document.querySelectorAll('.shield-opt').forEach(el => {
+        el.classList.remove('border-emerald-500/40', 'bg-emerald-500/10');
+        el.classList.add('border-slate-700', 'bg-slate-900/50');
+      });
+      element.classList.remove('border-slate-700', 'bg-slate-900/50');
+      element.classList.add('border-emerald-500/40', 'bg-emerald-500/10');
+      element.querySelector('input').checked = true;
+      selectedShield = preset;
+    }
+
+    function showProgress(text, pct) {
+      const container = document.getElementById('progressBarContainer');
+      const txt = document.getElementById('progressText');
+      const bar = document.getElementById('progressBar');
+      const pctTxt = document.getElementById('progressPct');
+
+      container.classList.remove('hidden');
+      txt.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-teal-400"></i> ${text}`;
+      bar.style.width = `${pct}%`;
+      pctTxt.textContent = `${pct}%`;
+    }
+
+    function hideProgress() {
+      document.getElementById('progressBarContainer').classList.add('hidden');
+    }
+
+    // Ingest URL
+    async function handleUrlIngest() {
+      const urlInput = document.getElementById('videoUrlInput');
+      const url = urlInput.value.trim();
+      if (!url) {
+        alert('Please enter a valid YouTube or video URL');
+        return;
+      }
+
+      showProgress('Downloading video stream...', 25);
+      try {
+        const res = await fetch('/api/ingest/url', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url})
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Download failed');
+
+        onMediaIngested(data.media);
+      } catch (err) {
+        alert('Error ingesting URL: ' + err.message);
+        hideProgress();
+      }
+    }
+
+    // Upload Local File
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      showProgress('Uploading & probing video file...', 30);
+      try {
+        const res = await fetch('/api/ingest/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Upload failed');
+
+        onMediaIngested(data.media);
+      } catch (err) {
+        alert('Error uploading file: ' + err.message);
+        hideProgress();
+      }
+    }
+
+    async function onMediaIngested(media) {
+      activeMediaId = media.id;
+
+      // Update media card
+      document.getElementById('mediaInfoCard').classList.remove('hidden');
+      document.getElementById('mediaThumb').src = media.thumb_url;
+      document.getElementById('mediaTitle').textContent = media.title;
+      document.getElementById('mediaDuration').textContent = `${Math.round(media.duration)}s`;
+      document.getElementById('mediaRes').textContent = media.resolution;
+
+      // Step 2: Trigger Local Transcription & Retention Analysis
+      showProgress('Transcribing audio locally (faster-whisper) & scoring hooks...', 65);
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({media_id: activeMediaId, model_size: 'base'})
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Analysis failed');
+
+        showProgress('Viral clips detected!', 100);
+        setTimeout(hideProgress, 800);
+
+        renderClips(data.clips);
+      } catch (err) {
+        alert('Analysis error: ' + err.message);
+        hideProgress();
+      }
+    }
+
+    function renderClips(clips) {
+      detectedClips = clips;
+      const grid = document.getElementById('clipsGrid');
+      const empty = document.getElementById('emptyClipsState');
+      const countBadge = document.getElementById('clipsCountBadge');
+
+      empty.classList.add('hidden');
+      grid.classList.remove('hidden');
+      countBadge.classList.remove('hidden');
+      countBadge.textContent = `${clips.length} Viral Clips Found`;
+
+      grid.innerHTML = '';
+
+      clips.forEach((clip, index) => {
+        const card = document.createElement('div');
+        card.className = "p-5 rounded-2xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+
+        card.innerHTML = `
+          <div class="space-y-2 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black ${index === 0 ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">
+                #${clip.rank} ${index === 0 ? 'TOP VIRAL PICK' : 'HIGH RETENTION'}
+              </span>
+              <span class="text-xs font-bold text-teal-400">
+                <i class="fa-solid fa-fire mr-1"></i>${clip.retention_score}% Retention Score
+              </span>
+              <span class="text-xs text-slate-400">
+                <i class="fa-regular fa-clock mr-1"></i>${clip.duration}s (${clip.start}s - ${clip.end}s)
+              </span>
+            </div>
+
+            <h4 class="text-sm font-black text-slate-100 tracking-wide">${clip.hook_headline}</h4>
+            <p class="text-xs text-slate-400 line-clamp-2 italic">"${clip.text}"</p>
+
+            <div class="flex items-center gap-3 text-[11px] text-slate-500">
+              <span>Hook: <strong class="text-slate-300">${clip.hook_score}/100</strong></span>
+              <span>•</span>
+              <span>Pacing: <strong class="text-slate-300">${clip.pacing_score}/100</strong></span>
+              <span>•</span>
+              <span>Energy: <strong class="text-slate-300">${clip.energy_score}/100</strong></span>
+            </div>
+          </div>
+
+          <button onclick="renderSelectedClip(${index})" id="renderBtn_${index}"
+                  class="w-full md:w-auto py-2.5 px-5 rounded-xl font-bold text-xs bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white shadow-lg transition flex items-center justify-center gap-2 whitespace-nowrap">
+            <i class="fa-solid fa-play"></i>
+            <span>Create 9:16 Reel</span>
+          </button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function renderSelectedClip(index) {
+      const clip = detectedClips[index];
+      const btn = document.getElementById(`renderBtn_${index}`);
+      const origHtml = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Rendering 9:16...`;
+
+      showProgress('Applying 9:16 vertical reframe, burning karaoke captions & Anti-Copyright Shield...', 70);
+
+      try {
+        const payload = {
+          media_id: activeMediaId,
+          start_time: clip.start,
+          end_time: clip.end,
+          words: clip.words,
+          hook_headline: clip.hook_headline,
+          reframe_mode: selectedReframe,
+          protection_preset: selectedShield
+        };
+
+        const res = await fetch('/api/render', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Rendering failed');
+
+        showProgress('Clip Ready!', 100);
+        setTimeout(hideProgress, 600);
+
+        // Show in Preview Studio
+        showPreviewStudio(data);
+      } catch (err) {
+        alert('Render error: ' + err.message);
+        hideProgress();
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }
+
+    function showPreviewStudio(clipData) {
+      const card = document.getElementById('previewCard');
+      const player = document.getElementById('renderedPlayer');
+      const dlBtn = document.getElementById('downloadClipBtn');
+      const shieldText = document.getElementById('renderedShieldText');
+
+      player.src = clipData.download_url;
+      player.load();
+      player.play().catch(() => {});
+
+      dlBtn.href = clipData.download_url;
+      shieldText.textContent = `Preset: ${clipData.protection_preset.toUpperCase()}`;
+
+      card.classList.remove('hidden');
+      card.scrollIntoView({behavior: 'smooth'});
+    }
+  </script>
+</body>
+</html>
