@@ -1,0 +1,103 @@
+"""
+video_processor.py - End-to-end rendering pipeline that extracts slices,
+applies 9:16 vertical reframing, and burns dynamic karaoke subtitles.
+"""
+
+import os
+import subprocess
+import uuid
+from typing import Any, Dict, List, Optional
+from backend.reframe import VideoReframer
+from backend.subtitle_generator import SubtitleGenerator
+from backend.media_utils import probe_video
+
+
+class VideoProcessor:
+    def __init__(self, temp_dir: str = "storage/temp", clips_dir: str = "storage/clips"):
+        self.temp_dir = os.path.abspath(temp_dir)
+        self.clips_dir = os.path.abspath(clips_dir)
+        os.makedirs(self.temp_dir, exist_ok=True)
+        os.makedirs(self.clips_dir, exist_ok=True)
+
+        self.subtitle_generator = SubtitleGenerator()
+        self.reframer = VideoReframer(target_width=1080, target_height=1920)
+
+    def render_clip(
+        self,
+        source_video_path: str,
+        start_time: float,
+        end_time: float,
+        words: Optional[List[Dict[str, Any]]] = None,
+        hook_headline: Optional[str] = None,
+        reframe_mode: str = "blur_padding",
+        output_clip_path: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Slice video segment, reframe to 9:16 vertical, and burn in karaoke subtitles.
+        """
+        if not os.path.exists(source_video_path):
+            raise FileNotFoundError(f"Source video not found: {source_video_path}")
+
+        duration = max(1.0, end_time - start_time)
+        clip_id = str(uuid.uuid4())[:8]
+
+        if output_clip_path is None:
+            output_clip_path = os.path.join(self.clips_dir, f"clip_{clip_id}.mp4")
+
+        os.makedirs(os.path.dirname(os.path.abspath(output_clip_path)), exist_ok=True)
+
+        # 1. Generate subtitle .ass file if words or headline provided
+        subtitle_ass_path = None
+        if words or hook_headline:
+            subtitle_ass_path = os.path.join(self.temp_dir, f"sub_{clip_id}.ass")
+            self.subtitle_generator.generate_ass(
+                words=words or [],
+                output_ass_path=subtitle_ass_path,
+                time_offset=start_time,
+                hook_headline=hook_headline,
+                duration=duration
+            )
+
+        # 2. Build FFmpeg filter graph
+        filter_graph = self.reframer.build_filter_graph(
+            mode=reframe_mode,
+            subtitle_ass_path=subtitle_ass_path
+        )
+
+        # 3. Assemble FFmpeg slicing and rendering command
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-ss", f"{start_time:.3f}",
+            "-to", f"{end_time:.3f}",
+            "-i", source_video_path,
+            "-filter_complex", filter_graph,
+            "-map", "[v]",
+            "-map", "0:a?",
+            "-c:v", "libx264",
+            "-preset", "veryfast",
+            "-crf", "22",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-movflags", "+faststart",
+            output_clip_path
+        ]
+
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"FFmpeg render clip failed: {result.stderr}")
+
+        meta = probe_video(output_clip_path)
+
+        return {
+            "clip_id": clip_id,
+            "clip_path": os.path.abspath(output_clip_path),
+            "start_time": start_time,
+            "end_time": end_time,
+            "duration": meta["duration"],
+            "width": meta["width"],
+            "height": meta["height"],
+            "is_vertical": meta["is_vertical"],
+            "subtitle_path": subtitle_ass_path
+        }
