@@ -22,7 +22,7 @@ from backend.retention_scorer import RetentionScorer
 from backend.video_processor import VideoProcessor
 from backend.media_utils import probe_video
 
-app = FastAPI(title="Retention Auto-Clipper API", version="1.0.0")
+app = FastAPI(title="Retention Auto-Clipper API", version="1.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,6 +43,39 @@ MEDIA_REGISTRY: Dict[str, Dict[str, Any]] = {}
 ANALYSIS_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
 
+def get_media_item(media_id: str) -> Optional[Dict[str, Any]]:
+    """Look up media item in memory or recover from disk storage."""
+    if media_id in MEDIA_REGISTRY:
+        return MEDIA_REGISTRY[media_id]
+
+    downloads_dir = os.path.abspath("storage/downloads")
+    if os.path.exists(downloads_dir):
+        for f in os.listdir(downloads_dir):
+            if f.startswith(f"{media_id}_") and f.endswith((".mp4", ".mkv", ".mov", ".webm")):
+                video_path = os.path.join(downloads_dir, f)
+                base = os.path.splitext(f)[0]
+                audio_dir = os.path.abspath("storage/audio")
+                audio_path = os.path.join(audio_dir, f"{base}.wav")
+                thumb_dir = os.path.abspath("storage/temp")
+                thumb_path = os.path.join(thumb_dir, f"{base}_thumb.jpg")
+                try:
+                    meta = probe_video(video_path)
+                except Exception:
+                    meta = {"duration": 30.0, "width": 1280, "height": 720}
+
+                item = {
+                    "id": media_id,
+                    "title": f.split("_", 1)[1] if "_" in f else f,
+                    "video_path": video_path,
+                    "audio_path": audio_path,
+                    "thumb_path": thumb_path,
+                    "metadata": meta
+                }
+                MEDIA_REGISTRY[media_id] = item
+                return item
+    return None
+
+
 class URLIngestRequest(BaseModel):
     url: str
 
@@ -60,6 +93,11 @@ class RenderClipRequest(BaseModel):
     hook_headline: Optional[str] = None
     reframe_mode: Optional[str] = "blur_padding"
     protection_preset: Optional[str] = "subtle"
+    captions_style: Optional[str] = "bold"
+
+
+class RegenerateHeadlineRequest(BaseModel):
+    text: str
 
 
 @app.get("/api/health")
@@ -122,7 +160,7 @@ async def ingest_upload(file: UploadFile = File(...)):
 
 @app.post("/api/analyze")
 def analyze_video(req: AnalyzeRequest):
-    media = MEDIA_REGISTRY.get(req.media_id)
+    media = get_media_item(req.media_id)
     if not media:
         raise HTTPException(status_code=404, detail="Media not found. Ingest video first.")
 
@@ -133,8 +171,8 @@ def analyze_video(req: AnalyzeRequest):
     try:
         # Run local transcription with word-level timestamps
         transcript = transcriber.transcribe(audio_path)
-        # Run viral retention scoring
-        clips = retention_scorer.extract_clips(transcript, audio_path=audio_path, top_k=5)
+        # Run viral retention scoring with dynamic clickbait headlines
+        clips = retention_scorer.extract_clips(transcript, audio_path=audio_path, top_k=8)
 
         ANALYSIS_REGISTRY[req.media_id] = {
             "transcript": transcript,
@@ -155,13 +193,13 @@ def analyze_video(req: AnalyzeRequest):
 
 @app.post("/api/render")
 def render_clip(req: RenderClipRequest):
-    media = MEDIA_REGISTRY.get(req.media_id)
+    media = get_media_item(req.media_id)
     if not media:
-        raise HTTPException(status_code=404, detail="Media not found.")
+        raise HTTPException(status_code=404, detail=f"Media {req.media_id} not found.")
 
     source_video_path = media["video_path"]
     if not os.path.exists(source_video_path):
-        raise HTTPException(status_code=404, detail="Source video file not found.")
+        raise HTTPException(status_code=404, detail="Source video file not found on disk.")
 
     try:
         render_result = video_processor.render_clip(
@@ -171,7 +209,8 @@ def render_clip(req: RenderClipRequest):
             words=req.words,
             hook_headline=req.hook_headline,
             reframe_mode=req.reframe_mode or "blur_padding",
-            protection_preset=req.protection_preset or "subtle"
+            protection_preset=req.protection_preset or "subtle",
+            captions_style=req.captions_style or "bold"
         )
 
         filename = os.path.basename(render_result["clip_path"])
@@ -185,6 +224,13 @@ def render_clip(req: RenderClipRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Rendering clip failed: {str(e)}")
+
+
+@app.post("/api/headline/regenerate")
+def regenerate_headline(req: RegenerateHeadlineRequest):
+    """Regenerate a fresh clickbait hook title for a clip."""
+    headline = retention_scorer._generate_headline(req.text, req.text.split(".")[0])
+    return {"headline": headline}
 
 
 @app.get("/api/clips")

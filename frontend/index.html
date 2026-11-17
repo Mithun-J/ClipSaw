@@ -96,19 +96,10 @@
     .animate-marquee {
       display: flex;
       width: 200%;
-      animation: marquee 22s linear infinite;
+      animation: marquee 24s linear infinite;
     }
     .animate-marquee:hover {
       animation-play-state: paused;
-    }
-
-    /* Wiggle badge */
-    @keyframes wiggle {
-      0%, 100% { transform: rotate(-3deg); }
-      50% { transform: rotate(3deg); }
-    }
-    .animate-wiggle {
-      animation: wiggle 3s ease-in-out infinite;
     }
 
     .aspect-9-16 {
@@ -118,7 +109,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- TOAST NOTIFICATION POPUP -->
+  <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- SITE HEADER -->
@@ -131,7 +122,7 @@
           </div>
           <span class="font-display text-2xl font-black tracking-tight uppercase">CLIPSAW</span>
         </a>
-        <span class="hidden sm:inline-block border-2 border-black bg-accent px-2.5 py-0.5 font-display text-[11px] font-bold uppercase shadow-brutal-sm">
+        <span class="border-2 border-black bg-accent px-2.5 py-0.5 font-display text-[11px] font-bold uppercase shadow-brutal-sm">
           <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI Video Clipper
         </span>
       </div>
@@ -140,7 +131,7 @@
         <!-- Anti-Copyright Shield Active Badge -->
         <div class="flex items-center gap-1.5 border-2 border-black bg-[#bef264] px-3 py-1 font-display text-xs font-bold shadow-brutal-sm">
           <i class="fa-solid fa-shield-halved text-emerald-800"></i>
-          <span class="hidden md:inline">ANTI-COPYRIGHT:</span> ACTIVE
+          <span>ANTI-COPYRIGHT:</span> <span class="font-black">ACTIVE</span>
         </div>
 
         <!-- GPU status badge -->
@@ -154,74 +145,42 @@
 
   <main class="flex-1">
 
-    <!-- HERO SECTION -->
+    <!-- HERO SECTION & UPLOAD HUB -->
     <section class="relative border-b-2 border-black bg-grid overflow-hidden">
-      <div class="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16 grid lg:grid-cols-[1.35fr_1fr] gap-10 items-center">
-        <div>
-          <span class="inline-flex items-center gap-2 border-2 border-black bg-accent px-3 py-1 font-display text-xs font-bold uppercase shadow-brutal-sm">
-            <i class="fa-solid fa-bolt"></i> Free Open-Source Clipper
-          </span>
-          <h1 class="mt-5 font-display text-5xl md:text-7xl font-bold leading-[0.95] tracking-tighter text-black">
-            Long video in.<br>
-            <span class="relative inline-block bg-primary px-2.5 mt-2 border-2 border-black shadow-brutal">
-              Viral clips
-            </span> out.
-          </h1>
-          <p class="mt-6 text-lg text-slate-700 max-w-lg font-medium leading-relaxed">
-            Drop a podcast, YouTube link, or stream. CLIPSAW transcribes speech locally, isolates high-attention hooks, reframes to 9:16 vertical, and protects against copyright strikes.
-          </p>
-        </div>
+      <div class="max-w-4xl mx-auto px-4 md:px-8 py-12 md:py-16 text-center">
+        <span class="inline-flex items-center gap-2 border-2 border-black bg-accent px-3 py-1 font-display text-xs font-bold uppercase shadow-brutal-sm mb-4">
+          <i class="fa-solid fa-bolt"></i> 100% Free & Local Open-Source AI
+        </span>
+        <h1 class="font-display text-5xl md:text-7xl font-bold leading-[0.95] tracking-tighter text-black">
+          Long video in.<br>
+          <span class="relative inline-block bg-primary px-3 mt-2 border-2 border-black shadow-brutal">
+            Viral clips
+          </span> out.
+        </h1>
+        <p class="mt-5 text-base md:text-lg text-slate-700 max-w-xl mx-auto font-medium leading-relaxed">
+          Paste any YouTube link or drop a video. CLIPSAW transcribes speech locally, creates punchy clickbait headlines, burns animated karaoke subtitles, and exports 9:16 vertical shorts protected against copyright strikes.
+        </p>
 
-        <!-- Stacked thumbnails mock -->
-        <div class="relative mx-auto hidden lg:block w-full max-w-sm h-80" aria-hidden="true">
-          <div class="absolute aspect-9-16 w-44 border-2 border-black bg-slate-900 shadow-brutal-lg left-0 top-6 -rotate-6 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=600&auto=format&fit=crop&q=80" alt="Podcast" class="w-full h-full object-cover opacity-85">
-            <div class="absolute bottom-2 left-2 right-2 bg-black/80 p-1.5 text-[10px] font-display font-bold text-white border border-white">
-              PODCAST CUT #1
-            </div>
-          </div>
-          <div class="absolute aspect-9-16 w-44 border-2 border-black bg-slate-900 shadow-brutal-lg right-0 top-2 rotate-6 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80" alt="Talk" class="w-full h-full object-cover opacity-85">
-            <div class="absolute bottom-2 left-2 right-2 bg-black/80 p-1.5 text-[10px] font-display font-bold text-white border border-white">
-              KEYNOTE MOMENT
-            </div>
-          </div>
-          <div class="absolute aspect-9-16 w-44 border-2 border-black bg-slate-900 shadow-brutal-lg left-1/2 top-0 -translate-x-1/2 z-10 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80" alt="Stream" class="w-full h-full object-cover opacity-90">
-            <div class="absolute top-2 left-2 bg-primary border-2 border-black px-1.5 py-0.5 font-display text-[10px] font-black shadow-brutal-sm">
-              TOP VIRAL
-            </div>
-            <div class="absolute bottom-2 left-2 right-2 bg-black/90 p-2 text-[10px] font-display font-bold text-primary border border-white">
-              🚨 99% OF PEOPLE MAKE THIS MISTAKE 🤯
-            </div>
-          </div>
-          <span class="absolute -bottom-2 right-4 z-20 animate-wiggle border-2 border-black bg-accent px-3 py-1 font-display text-sm font-bold shadow-brutal">
-            🔥 97 / 100 Virality
-          </span>
-        </div>
-      </div>
-
-      <!-- UPLOAD & SETTINGS PANEL -->
-      <div class="max-w-7xl mx-auto px-4 md:px-8 pb-14">
-        <div class="border-2 border-black bg-white shadow-brutal-lg p-6 md:p-8">
+        <!-- UPLOAD & CONTROLS BOX -->
+        <div class="mt-10 border-2 border-black bg-white shadow-brutal-lg p-6 md:p-8 text-left">
           <!-- TABS -->
           <div class="flex items-center gap-3 border-b-2 border-black pb-4 mb-6">
             <button id="tabUrlBtn" onclick="switchUploadTab('url')"
                     class="px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-primary shadow-brutal-sm transition">
-              <i class="fa-brands fa-youtube mr-1.5 text-red-600"></i> YouTube / Video URL
+              <i class="fa-brands fa-youtube mr-1.5 text-red-600"></i> YouTube Link
             </button>
             <button id="tabFileBtn" onclick="switchUploadTab('file')"
                     class="px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-white hover:bg-slate-100 transition">
-              <i class="fa-solid fa-file-video mr-1.5"></i> Local Video File
+              <i class="fa-solid fa-file-video mr-1.5"></i> Upload Video File
             </button>
           </div>
 
           <!-- URL INPUT FORM -->
-          <div id="tabUrlContent" class="space-y-6">
-            <div class="flex flex-col md:flex-row gap-3">
+          <div id="tabUrlContent" class="space-y-4">
+            <div class="flex flex-col sm:flex-row gap-3">
               <div class="flex-1 border-2 border-black bg-slate-50 flex items-center px-4 py-3 shadow-brutal-sm focus-within:bg-white focus-within:shadow-brutal transition">
                 <i class="fa-solid fa-link text-slate-500 mr-3 text-lg"></i>
-                <input type="text" id="urlInput" placeholder="Paste YouTube link here (e.g. https://www.youtube.com/watch?v=...)"
+                <input type="text" id="urlInput" placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=...)"
                        class="w-full bg-transparent border-none text-sm md:text-base font-semibold focus:outline-none placeholder-slate-400">
               </div>
               <button onclick="handleStartClipping('url')" id="startClippingBtn"
@@ -233,23 +192,23 @@
           </div>
 
           <!-- LOCAL FILE UPLOAD FORM -->
-          <div id="tabFileContent" class="hidden space-y-6">
-            <label class="border-2 border-dashed border-black hover:bg-accent/20 p-10 flex flex-col items-center justify-center cursor-pointer transition group">
+          <div id="tabFileContent" class="hidden space-y-4">
+            <label class="border-2 border-dashed border-black hover:bg-accent/20 p-8 flex flex-col items-center justify-center cursor-pointer transition group">
               <i class="fa-solid fa-cloud-arrow-up text-4xl mb-3 text-black group-hover:scale-110 transition"></i>
-              <span class="font-display text-base font-bold uppercase">Choose a video file or drag here</span>
-              <span class="text-xs text-muted font-medium mt-1">MP4, MKV, MOV, WebM (up to 4GB)</span>
+              <span class="font-display text-base font-bold uppercase">Choose video file or drag here</span>
+              <span class="text-xs text-muted font-medium mt-1">MP4, MKV, MOV, WebM (Free, no file size limit)</span>
               <input type="file" id="fileInput" accept="video/*" class="hidden" onchange="handleFileSelect(event)">
             </label>
           </div>
 
-          <!-- STUDIO SETTINGS DRAWER -->
-          <div class="mt-6 pt-6 border-t-2 border-black grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- SETTINGS DRAWER -->
+          <div class="mt-6 pt-6 border-t-2 border-black grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Aspect Ratio -->
             <div>
-              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-2">
+              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-1.5">
                 <i class="fa-solid fa-mobile-screen mr-1"></i> Aspect Ratio
               </label>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-3 gap-1.5">
                 <button type="button" onclick="setSetting('aspect', '9:16', this)" class="setting-aspect border-2 border-black bg-primary px-2 py-1.5 font-display text-xs font-bold shadow-brutal-sm">
                   9:16 Shorts
                 </button>
@@ -262,28 +221,28 @@
               </div>
             </div>
 
-            <!-- Subtitle Captions Style -->
+            <!-- Eye-Catching Captions Style -->
             <div>
-              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-2">
-                <i class="fa-solid fa-closed-captioning mr-1"></i> Captions Style
+              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-1.5">
+                <i class="fa-solid fa-closed-captioning mr-1"></i> Karaoke Style
               </label>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-3 gap-1.5">
                 <button type="button" onclick="setSetting('captions', 'bold', this)" class="setting-captions border-2 border-black bg-primary px-2 py-1.5 font-display text-xs font-bold shadow-brutal-sm">
-                  Bold Karaoke
+                  Hormozi Gold
                 </button>
                 <button type="button" onclick="setSetting('captions', 'neon', this)" class="setting-captions border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
                   Cyber Cyan
                 </button>
-                <button type="button" onclick="setSetting('captions', 'minimal', this)" class="setting-captions border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
-                  Minimal
+                <button type="button" onclick="setSetting('captions', 'green', this)" class="setting-captions border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
+                  Viral Green
                 </button>
               </div>
             </div>
 
-            <!-- Anti-Copyright Shield -->
+            <!-- Anti-Copyright Shield Preset -->
             <div>
-              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-2 text-emerald-800">
-                <i class="fa-solid fa-shield-virus mr-1"></i> Anti-Copyright Shield
+              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-1.5 text-emerald-800">
+                <i class="fa-solid fa-shield-halved mr-1"></i> Anti-Copyright Shield
               </label>
               <select id="shieldSelect" onchange="selectedShield = this.value"
                       class="w-full border-2 border-black bg-[#bef264] px-3 py-1.5 font-display text-xs font-bold shadow-brutal-sm focus:outline-none cursor-pointer">
@@ -298,43 +257,39 @@
       </div>
     </section>
 
-    <!-- NEO-BRUTALIST MARQUEE -->
+    <!-- NEO-BRUTALIST MARQUEE RIBBON -->
     <div class="border-b-2 border-black bg-primary py-3 overflow-hidden">
       <div class="animate-marquee font-display font-black text-xs md:text-sm uppercase tracking-wider flex items-center gap-8 whitespace-nowrap">
-        <span>⚡ 100% FREE & LOCAL OPEN-SOURCE AI</span>
+        <span>⚡ 100% FREE & LOCAL WHISPER AI</span>
         <span>•</span>
-        <span>🛡️ ANTI-COPYRIGHT STRIKE SHIELD ACTIVE</span>
-        <span>•</span>
-        <span>📱 9:16 REELS, SHORTS & TIKTOK</span>
-        <span>•</span>
-        <span>🎙️ WHISPER SPEECH-TO-TEXT</span>
-        <span>•</span>
-        <span>🔥 AUTOMATIC HOOK & RETENTION SCORING</span>
-        <span>•</span>
-        <span>✨ DYNAMIC WORD-BY-WORD KARAOKE SUBTITLES</span>
-        <span>•</span>
-        <span>🚀 ZERO API SUBSCRIPTION FEES</span>
-        <span>•</span>
-        <span>⚡ 100% FREE & LOCAL OPEN-SOURCE AI</span>
-        <span>•</span>
-        <span>🛡️ ANTI-COPYRIGHT STRIKE SHIELD ACTIVE</span>
+        <span>🛡️ ANTI-COPYRIGHT STRIKE SHIELD</span>
         <span>•</span>
         <span>📱 9:16 REELS, SHORTS & TIKTOK</span>
         <span>•</span>
-        <span>🎙️ WHISPER SPEECH-TO-TEXT</span>
+        <span>🔥 DYNAMIC CLICKBAIT HOOK TITLES</span>
+        <span>•</span>
+        <span>✨ EYE-CATCHING WORD-LEVEL KARAOKE CAPTIONS</span>
+        <span>•</span>
+        <span>🚀 ZERO SUBSCRIPTIONS & ZERO API KEYS</span>
+        <span>•</span>
+        <span>⚡ 100% FREE & LOCAL WHISPER AI</span>
+        <span>•</span>
+        <span>🛡️ ANTI-COPYRIGHT STRIKE SHIELD</span>
+        <span>•</span>
+        <span>📱 9:16 REELS, SHORTS & TIKTOK</span>
       </div>
     </div>
 
-    <!-- PROCESSING PANEL (Visible during processing) -->
-    <section id="processingPanel" class="hidden max-w-7xl mx-auto px-4 md:px-8 py-12 scroll-mt-20">
-      <div class="border-2 border-black bg-white shadow-brutal-xl p-8 max-w-2xl mx-auto">
+    <!-- PROCESSING PANEL (Active during clipping) -->
+    <section id="processingPanel" class="hidden max-w-4xl mx-auto px-4 md:px-8 py-10 scroll-mt-20">
+      <div class="border-2 border-black bg-white shadow-brutal-xl p-8">
         <div class="flex items-center justify-between border-b-2 border-black pb-4 mb-6">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-none bg-primary border-2 border-black flex items-center justify-center font-display font-black animate-spin">
+            <div class="w-8 h-8 bg-primary border-2 border-black flex items-center justify-center font-display font-black animate-spin">
               ⚡
             </div>
             <div>
-              <h3 class="font-display text-xl font-bold uppercase">Processing Video</h3>
+              <h3 class="font-display text-xl font-bold uppercase">Analyzing Video</h3>
               <p id="processingSource" class="text-xs text-muted truncate max-w-md font-medium">Source</p>
             </div>
           </div>
@@ -343,11 +298,10 @@
           </button>
         </div>
 
-        <!-- STAGES -->
         <div class="space-y-4 mb-6">
-          <div id="stepIngest" class="flex items-center gap-3 font-display text-sm font-bold">
+          <div id="stepIngest" class="flex items-center gap-3 font-display text-sm font-bold text-black">
             <span class="w-6 h-6 border-2 border-black bg-primary flex items-center justify-center text-xs">1</span>
-            <span>Downloading stream & probing media specs...</span>
+            <span>Downloading stream & extracting audio...</span>
           </div>
           <div id="stepTranscribe" class="flex items-center gap-3 font-display text-sm font-bold text-muted">
             <span class="w-6 h-6 border-2 border-black bg-white flex items-center justify-center text-xs">2</span>
@@ -355,11 +309,10 @@
           </div>
           <div id="stepAnalyze" class="flex items-center gap-3 font-display text-sm font-bold text-muted">
             <span class="w-6 h-6 border-2 border-black bg-white flex items-center justify-center text-xs">3</span>
-            <span>Analyzing hook curiosity, speech cadence & RMS audio energy...</span>
+            <span>Generating topic clickbait titles & karaoke word-timestamps...</span>
           </div>
         </div>
 
-        <!-- PROGRESS BAR -->
         <div class="w-full border-2 border-black bg-slate-100 h-6 p-0.5">
           <div id="progressBar" class="bg-primary h-full border-r-2 border-black transition-all duration-300 w-0"></div>
         </div>
@@ -368,32 +321,32 @@
     </section>
 
     <!-- RESULTS SECTION -->
-    <section id="resultsSection" class="max-w-7xl mx-auto px-4 md:px-8 py-12 scroll-mt-20">
+    <section id="resultsSection" class="max-w-7xl mx-auto px-4 md:px-8 py-10 scroll-mt-20">
       <!-- HEADER -->
       <div class="flex flex-wrap items-end justify-between gap-6 border-b-2 border-black pb-6">
         <div>
           <p id="projectStatusLabel" class="font-display text-xs font-bold uppercase tracking-widest text-muted">
-            Sample project
+            Your Viral Clips
           </p>
           <h2 class="mt-1 font-display text-3xl md:text-4xl font-bold tracking-tighter">
-            <span id="clipsCount">8</span> clips from <span id="currentSourceLabel" class="bg-accent px-1.5 border border-black shadow-brutal-sm">Sample Talk</span>
+            <span id="clipsCount">0</span> clips from <span id="currentSourceLabel" class="bg-accent px-2 border border-black shadow-brutal-sm">No video yet</span>
           </h2>
         </div>
 
         <button onclick="exportAllClips()" class="btn-brutal bg-black text-white px-5 py-2.5 font-display text-sm font-bold uppercase flex items-center gap-2">
           <i class="fa-solid fa-download"></i>
-          <span>Export All</span>
+          <span>Export All Ready Clips</span>
         </button>
       </div>
 
-      <!-- FILTERS & SEGMENTED CONTROLS -->
+      <!-- FILTERS & CONTROLS -->
       <div class="mt-6 flex flex-wrap gap-6 items-center">
-        <!-- Sort By Segmented -->
+        <!-- Sort By -->
         <div class="flex items-center gap-2">
           <span class="font-display text-xs font-bold uppercase text-muted">Sort by:</span>
           <div class="inline-flex border-2 border-black bg-white shadow-brutal-sm">
             <button id="sortScoreBtn" onclick="setSortKey('score')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-primary border-r-2 border-black">
-              Top Score
+              Top Virality
             </button>
             <button id="sortTimelineBtn" onclick="setSortKey('timeline')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100">
               Timeline
@@ -401,7 +354,7 @@
           </div>
         </div>
 
-        <!-- Min Score Segmented -->
+        <!-- Min Score -->
         <div class="flex items-center gap-2">
           <span class="font-display text-xs font-bold uppercase text-muted">Min score:</span>
           <div class="inline-flex border-2 border-black bg-white shadow-brutal-sm">
@@ -418,9 +371,9 @@
         </div>
       </div>
 
-      <!-- CLIPS GRID -->
-      <div id="clipsGrid" class="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <!-- Cards dynamically populated -->
+      <!-- DYNAMIC CLIPS GRID -->
+      <div id="clipsGrid" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Populated via renderClips() -->
       </div>
     </section>
 
@@ -437,34 +390,50 @@
     </div>
   </footer>
 
-  <!-- CLIP PREVIEW DIALOG (MODAL) -->
-  <div id="clipDialog" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <!-- CLIP PREVIEW & EXPORT MODAL -->
+  <div id="clipDialog" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="border-brutal-3 bg-white shadow-brutal-xl w-full max-w-3xl max-h-[92vh] overflow-y-auto p-6 md:p-8 relative">
       <!-- Close Button -->
       <button onclick="closeClipDialog()" class="absolute top-4 right-4 w-9 h-9 border-2 border-black bg-white hover:bg-primary shadow-brutal-sm flex items-center justify-center font-display font-black text-lg transition">
         ✕
       </button>
 
-      <div class="flex items-center gap-2 mb-4">
+      <div class="flex items-center gap-2 mb-3">
         <span id="dialogRankBadge" class="border-2 border-black bg-primary px-2.5 py-0.5 font-display text-xs font-bold uppercase shadow-brutal-sm">
-          #1 TOP VIRAL
+          #1 VIRAL MOMENT
         </span>
         <span id="dialogScoreBadge" class="border-2 border-black bg-accent px-2.5 py-0.5 font-display text-xs font-bold uppercase shadow-brutal-sm">
-          96 / 100 Score
+          96 / 100 Virality
         </span>
       </div>
 
-      <h3 id="dialogHeadline" class="font-display text-2xl font-black tracking-tight mb-6">
-        🚨 HOOK HEADLINE
-      </h3>
+      <!-- Editable Clickbait Headline -->
+      <div class="mb-5">
+        <label class="block font-display text-[11px] font-bold uppercase text-muted mb-1">
+          Clickbait Hook Headline (Editable)
+        </label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="dialogHeadlineInput"
+                 class="flex-1 font-display text-lg md:text-xl font-black border-2 border-black bg-slate-50 px-3 py-2 shadow-brutal-sm focus:bg-white focus:outline-none uppercase">
+          <button onclick="rerollHeadline()" title="Generate another clickbait headline"
+                  class="btn-brutal bg-accent px-3.5 py-2 font-display text-xs font-bold uppercase whitespace-nowrap">
+            <i class="fa-solid fa-arrows-rotate mr-1"></i> Re-roll
+          </button>
+        </div>
+      </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        <!-- Video Preview -->
-        <div class="aspect-9-16 max-w-[280px] mx-auto border-2 border-black bg-black shadow-brutal-lg overflow-hidden flex items-center justify-center">
+        <!-- 9:16 Video Player with Loading State -->
+        <div class="aspect-9-16 max-w-[280px] w-full mx-auto border-2 border-black bg-black shadow-brutal-lg overflow-hidden relative flex items-center justify-center">
+          <div id="videoSpinner" class="absolute inset-0 bg-black flex flex-col items-center justify-center p-4 text-center z-10">
+            <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p class="font-display text-xs font-bold text-white uppercase tracking-wider">Rendering 9:16 Short...</p>
+            <p class="text-[10px] text-slate-400 mt-1">Burning karaoke captions & applying Anti-Copyright Shield</p>
+          </div>
           <video id="dialogVideoPlayer" controls playsinline class="w-full h-full object-cover"></video>
         </div>
 
-        <!-- Controls & Meta -->
+        <!-- Controls & Meta Details -->
         <div class="space-y-4">
           <div class="border-2 border-black bg-slate-50 p-4 shadow-brutal-sm space-y-2 text-xs font-display">
             <div class="flex justify-between font-bold">
@@ -477,24 +446,28 @@
             </div>
             <div class="flex justify-between font-bold">
               <span class="text-muted">ANTI-COPYRIGHT:</span>
-              <span class="text-emerald-700 font-black">PROTECTED</span>
+              <span class="text-emerald-700 font-black" id="dialogShieldPreset">SUBTLE (PROTECTED)</span>
             </div>
             <div class="flex justify-between font-bold">
               <span class="text-muted">CAPTIONS:</span>
-              <span>DYNAMIC KARAOKE</span>
+              <span id="dialogCaptionsStyle">HORMOZI GOLD KARAOKE</span>
             </div>
           </div>
 
           <div>
-            <label class="block font-display text-xs font-bold uppercase text-muted mb-1">Spoken Excerpt</label>
-            <p id="dialogExcerpt" class="text-xs p-3 border-2 border-black bg-white font-medium italic text-slate-700 max-h-28 overflow-y-auto"></p>
+            <label class="block font-display text-xs font-bold uppercase text-muted mb-1">Spoken Dialogue Excerpt</label>
+            <p id="dialogExcerpt" class="text-xs p-3 border-2 border-black bg-white font-medium italic text-slate-700 max-h-24 overflow-y-auto"></p>
           </div>
 
-          <div class="pt-2">
+          <div class="pt-2 space-y-2">
             <a id="dialogDownloadBtn" href="#" download
-               class="btn-brutal w-full bg-primary text-black py-3 font-display text-sm font-bold uppercase text-center block">
-              <i class="fa-solid fa-download mr-1.5"></i> Download 9:16 Video
+               class="btn-brutal w-full bg-primary text-black py-3.5 font-display text-sm font-bold uppercase text-center block">
+              <i class="fa-solid fa-download mr-1.5"></i> Download 9:16 MP4
             </a>
+            <button onclick="reRenderWithNewHeadline()" id="reRenderBtn"
+                    class="w-full border-2 border-black bg-white hover:bg-slate-100 py-2 font-display text-xs font-bold uppercase transition">
+              <i class="fa-solid fa-arrows-rotate mr-1"></i> Apply Title Changes & Re-Render
+            </button>
           </div>
         </div>
       </div>
@@ -502,91 +475,19 @@
   </div>
 
   <script>
-    // State management matching CLIPSAW Lovable design
-    let currentStage = "done";
-    let currentSource = "Sample Talk";
-    let isSample = true;
+    // State management
+    let activeMediaId = null;
+    let currentSource = "No video yet";
     let sortKey = "score";
     let minScoreFilter = "0";
-    let activeMediaId = null;
     let selectedAspect = "9:16";
     let selectedCaptions = "bold";
     let selectedShield = "subtle";
     let allClips = [];
-
-    // Mock Sample Clips for immediate initial showcase (just like Lovable generateClips)
-    const SAMPLE_CLIPS = [
-      {
-        id: "sample-1",
-        rank: 1,
-        retention_score: 97,
-        duration: 32,
-        start: 12.0,
-        end: 44.0,
-        hook_headline: "🚨 99% OF PEOPLE MAKE THIS MISTAKE 🤯",
-        text: "Did you know that 99% of creators make this one fatal mistake? It literally destroys their engagement within the first 3 seconds.",
-        video_url: "/storage/clips/test_rendered_9_16.mp4"
-      },
-      {
-        id: "sample-2",
-        rank: 2,
-        retention_score: 94,
-        duration: 28,
-        start: 54.0,
-        end: 82.0,
-        hook_headline: "🔥 THE SECRET BEHIND VIRAL RETENTION 🚀",
-        text: "When you analyze the highest retention videos, you notice they never pause. Every word connects to an emotional payoff.",
-        video_url: "/storage/clips/test_protected_clip.mp4"
-      },
-      {
-        id: "sample-3",
-        rank: 3,
-        retention_score: 91,
-        duration: 41,
-        start: 120.0,
-        end: 161.0,
-        hook_headline: "💡 HOW TO STOP THE SCROLL INSTANTLY ✨",
-        text: "If you don't shock the viewer in the first frame, you already lost them. Here is the visual contrast formula.",
-        video_url: "/storage/clips/test_rendered_9_16.mp4"
-      },
-      {
-        id: "sample-4",
-        rank: 4,
-        retention_score: 88,
-        duration: 25,
-        start: 190.0,
-        end: 215.0,
-        hook_headline: "⚡ THE BIGGEST PRODUCTIVITY LIE 🛑",
-        text: "Nobody talks about this, but waking up at 5 AM is completely useless if you trigger cortisol by checking your phone.",
-        video_url: "/storage/clips/test_protected_clip.mp4"
-      },
-      {
-        id: "sample-5",
-        rank: 5,
-        retention_score: 85,
-        duration: 35,
-        start: 240.0,
-        end: 275.0,
-        hook_headline: "🎯 THIS SIMPLE HABIT CHANGED EVERYTHING 📈",
-        text: "I spent three years testing different routines until I found this 10-minute cadence that doubled output.",
-        video_url: "/storage/clips/test_rendered_9_16.mp4"
-      },
-      {
-        id: "sample-6",
-        rank: 6,
-        retention_score: 82,
-        duration: 30,
-        start: 310.0,
-        end: 340.0,
-        hook_headline: "⚠️ WHY MOST CONTENT STRATEGIES FAIL 💥",
-        text: "You can post three times a day, but without high hook curiosity and punchlines, the algorithm buries your reach.",
-        video_url: "/storage/clips/test_protected_clip.mp4"
-      }
-    ];
+    let currentClipIndex = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       checkHealth();
-      allClips = [...SAMPLE_CLIPS];
       renderClips();
     });
 
@@ -684,7 +585,7 @@
           return;
         }
         startProcessing(url, async () => {
-          updateProgress(1, 25, "Fetching video stream...");
+          updateProgress(1, 25, "Fetching video stream with yt-dlp...");
           const res = await fetch('/api/ingest/url', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -705,7 +606,7 @@
       if (!file) return;
 
       startProcessing(file.name, async () => {
-        updateProgress(1, 20, "Uploading local file...");
+        updateProgress(1, 20, "Uploading local video file...");
         const fd = new FormData();
         fd.append('file', file);
         const res = await fetch('/api/ingest/upload', {
@@ -722,7 +623,6 @@
     }
 
     async function startProcessing(sourceName, ingestFn) {
-      currentStage = "processing";
       currentSource = sourceName;
       document.getElementById('processingSource').textContent = sourceName;
       document.getElementById('processingPanel').classList.remove('hidden');
@@ -747,10 +647,10 @@
         const analyzeData = await res.json();
 
         // Step 3: Hooks detected
-        updateProgress(3, 100, "Done! Formatting viral clips...");
+        updateProgress(3, 100, "Done! Formatting viral clips & clickbaits...");
         setTimeout(() => {
           finishProcessing(analyzeData.clips, sourceName);
-        }, 600);
+        }, 500);
 
       } catch (err) {
         showToast("Error", err.message);
@@ -772,20 +672,22 @@
     }
 
     function finishProcessing(clips, sourceName) {
-      currentStage = "done";
-      isSample = false;
-      allClips = clips;
+      allClips = clips.map((c, i) => ({
+        ...c,
+        id: c.id || `clip_${i + 1}_${int(c.start || 0)}`,
+        rank: i + 1
+      }));
+
       document.getElementById('processingPanel').classList.add('hidden');
-      document.getElementById('projectStatusLabel').textContent = "Your clips";
+      document.getElementById('projectStatusLabel').textContent = "Your Generated Clips";
       document.getElementById('currentSourceLabel').textContent = sourceName;
 
       renderClips();
       document.getElementById('resultsSection').scrollIntoView({behavior: 'smooth'});
-      showToast(`${clips.length} clips ready!`, "Ranked by virality score.");
+      showToast(`${clips.length} viral clips ready!`, "Ranked by virality score.");
     }
 
     function cancelProcessing() {
-      currentStage = "done";
       document.getElementById('processingPanel').classList.add('hidden');
       showToast("Clipping cancelled");
     }
@@ -806,20 +708,24 @@
 
       if (filtered.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full border-2 border-dashed border-black p-12 text-center font-display font-bold">
-            No clips hit that score. Lower the filter.
+          <div class="col-span-full border-2 border-dashed border-black p-12 text-center font-display">
+            <div class="text-3xl mb-2">✂️</div>
+            <h3 class="text-base font-bold uppercase mb-1">No clips generated yet</h3>
+            <p class="text-xs text-muted max-w-sm mx-auto">Paste a YouTube link or upload a video file above to generate high-retention short clips with karaoke captions.</p>
           </div>
         `;
         return;
       }
 
       filtered.forEach((clip, index) => {
+        // Find index in original array
+        const origIdx = allClips.findIndex(c => c.start === clip.start && c.end === clip.end);
         const card = document.createElement('div');
         card.className = "border-2 border-black bg-white shadow-brutal flex flex-col justify-between overflow-hidden group hover:-translate-y-1 hover:shadow-brutal-lg transition";
 
         card.innerHTML = `
           <!-- Card Header & Badges -->
-          <div class="p-4 border-b-2 border-black bg-slate-50 flex items-center justify-between">
+          <div class="p-3.5 border-b-2 border-black bg-slate-50 flex items-center justify-between">
             <span class="font-display font-black text-xs border border-black bg-white px-2 py-0.5 shadow-brutal-sm">
               #${clip.rank || index + 1}
             </span>
@@ -831,21 +737,24 @@
           <!-- Body -->
           <div class="p-5 flex-1 space-y-3">
             <div class="font-display text-xs font-bold text-muted uppercase flex items-center gap-1.5">
-              <i class="fa-regular fa-clock"></i> ${clip.duration}s • ${clip.start}s - ${clip.end}s
+              <i class="fa-regular fa-clock"></i> ${clip.duration}s (${clip.start}s - ${clip.end}s)
             </div>
 
-            <h4 class="font-display text-base font-bold leading-tight line-clamp-2">
-              ${clip.hook_headline}
-            </h4>
+            <div class="space-y-1">
+              <span class="text-[10px] font-display font-bold uppercase tracking-wider text-amber-700">Clickbait Headline</span>
+              <h4 class="font-display text-sm md:text-base font-black leading-tight line-clamp-2">
+                ${clip.hook_headline}
+              </h4>
+            </div>
 
             <p class="text-xs text-slate-600 line-clamp-3 italic font-medium">
               "${clip.text}"
             </p>
           </div>
 
-          <!-- Card Footer -->
-          <div class="p-4 border-t-2 border-black bg-white">
-            <button onclick="openClipPreview('${clip.id}')"
+          <!-- Card Actions -->
+          <div class="p-4 border-t-2 border-black bg-white space-y-2">
+            <button onclick="openClipPreview(${origIdx >= 0 ? origIdx : index})"
                     class="btn-brutal w-full bg-accent text-black py-2.5 font-display text-xs font-bold uppercase flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-play text-[10px]"></i>
               <span>Preview & Export</span>
@@ -856,62 +765,131 @@
       });
     }
 
-    async function openClipPreview(clipId) {
-      const clip = allClips.find(c => c.id === clipId);
+    // Interactive Preview & Live Rendering
+    async function openClipPreview(clipIdx) {
+      currentClipIndex = clipIdx;
+      const clip = allClips[clipIdx];
       if (!clip) return;
 
       document.getElementById('dialogRankBadge').textContent = `#${clip.rank || 1} VIRAL MOMENT`;
-      document.getElementById('dialogScoreBadge').textContent = `${clip.retention_score} / 100 Score`;
-      document.getElementById('dialogHeadline').textContent = clip.hook_headline;
+      document.getElementById('dialogScoreBadge').textContent = `${clip.retention_score} / 100 Virality`;
+      document.getElementById('dialogHeadlineInput').value = clip.hook_headline;
       document.getElementById('dialogDuration').textContent = `${clip.duration}s`;
       document.getElementById('dialogTimecode').textContent = `${clip.start}s - ${clip.end}s`;
       document.getElementById('dialogExcerpt').textContent = clip.text;
+      document.getElementById('dialogShieldPreset').textContent = `${selectedShield.toUpperCase()} (ACTIVE)`;
+      document.getElementById('dialogCaptionsStyle').textContent = `${selectedCaptions.toUpperCase()} KARAOKE`;
 
       const player = document.getElementById('dialogVideoPlayer');
       const dlBtn = document.getElementById('dialogDownloadBtn');
+      const spinner = document.getElementById('videoSpinner');
 
-      if (isSample || !activeMediaId) {
-        // Sample playback
-        player.src = clip.video_url || "/storage/clips/test_rendered_9_16.mp4";
-        dlBtn.href = player.src;
+      // Open Modal Dialog
+      document.getElementById('clipDialog').classList.remove('hidden');
+
+      // If already rendered, play cached version
+      if (clip.rendered_url) {
+        spinner.classList.add('hidden');
+        player.src = clip.rendered_url;
+        dlBtn.href = clip.rendered_url;
         player.load();
-      } else {
-        // Trigger live 9:16 rendering with selected shield
-        showToast("Generating 9:16 vertical render...", "Applying karaoke captions & shield");
-        try {
-          const res = await fetch('/api/render', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              media_id: activeMediaId,
-              start_time: clip.start,
-              end_time: clip.end,
-              words: clip.words,
-              hook_headline: clip.hook_headline,
-              reframe_mode: selectedAspect === '9:16' ? 'blur_padding' : 'smart_crop',
-              protection_preset: selectedShield
-            })
-          });
-          const data = await res.json();
-          player.src = data.download_url;
-          dlBtn.href = data.download_url;
-          player.load();
-        } catch (e) {
-          console.error('Render error:', e);
-        }
+        player.play().catch(() => {});
+        return;
       }
 
-      document.getElementById('clipDialog').classList.remove('hidden');
+      if (!activeMediaId) {
+        spinner.classList.add('hidden');
+        showToast("Notice", "Please ingest a video URL or upload a file first.");
+        return;
+      }
+
+      // Show spinner while generating 9:16 vertical render
+      spinner.classList.remove('hidden');
+      dlBtn.classList.add('opacity-50', 'pointer-events-none');
+
+      try {
+        const payload = {
+          media_id: activeMediaId,
+          start_time: clip.start,
+          end_time: clip.end,
+          words: clip.words,
+          hook_headline: clip.hook_headline,
+          reframe_mode: selectedAspect === '9:16' ? 'blur_padding' : 'smart_crop',
+          protection_preset: selectedShield,
+          captions_style: selectedCaptions
+        };
+
+        const res = await fetch('/api/render', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Rendering failed');
+        }
+
+        const data = await res.json();
+        clip.rendered_url = data.download_url;
+
+        spinner.classList.add('hidden');
+        player.src = data.download_url;
+        dlBtn.href = data.download_url;
+        dlBtn.classList.remove('opacity-50', 'pointer-events-none');
+        player.load();
+        player.play().catch(() => {});
+        showToast("9:16 Video Ready!", "Karaoke subtitles and protection applied.");
+      } catch (err) {
+        spinner.classList.add('hidden');
+        showToast("Render Error", err.message);
+      }
+    }
+
+    async function rerollHeadline() {
+      if (currentClipIndex === null) return;
+      const clip = allClips[currentClipIndex];
+      try {
+        const res = await fetch('/api/headline/regenerate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({text: clip.text})
+        });
+        const data = await res.json();
+        clip.hook_headline = data.headline;
+        document.getElementById('dialogHeadlineInput').value = data.headline;
+        renderClips();
+        showToast("Headline Re-rolled!", data.headline);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function reRenderWithNewHeadline() {
+      if (currentClipIndex === null) return;
+      const clip = allClips[currentClipIndex];
+      const customHeadline = document.getElementById('dialogHeadlineInput').value.trim();
+      if (customHeadline) {
+        clip.hook_headline = customHeadline;
+      }
+      clip.rendered_url = null; // Invalidate cache to re-render
+      renderClips();
+      await openClipPreview(currentClipIndex);
     }
 
     function closeClipDialog() {
       const p = document.getElementById('dialogVideoPlayer');
       p.pause();
       document.getElementById('clipDialog').classList.add('hidden');
+      currentClipIndex = null;
     }
 
     function exportAllClips() {
-      showToast(`Exporting ${allClips.length} clips`, "Zipping up 9:16 vertical files for download.");
+      if (allClips.length === 0) {
+        showToast("No clips", "Ingest a video link to generate clips first.");
+        return;
+      }
+      showToast(`Exporting ${allClips.length} clips`, "Click on any clip card to download its 9:16 vertical MP4.");
     }
   </script>
 </body>

@@ -1,6 +1,6 @@
 """
 subtitle_generator.py - Generates Advanced SubStation Alpha (.ass) subtitles
-with dynamic word-by-word active highlighting (Hormozi / TikTok karaoke style)
+with dynamic word-by-word active highlighting (Hormozi / TikTok / MrBeast karaoke style)
 and viral hook headline banner.
 """
 
@@ -22,20 +22,50 @@ def format_ass_time(seconds: float) -> str:
 
 
 class SubtitleGenerator:
+    # ASS colors use &H00BBGGRR& (Alpha, Blue, Green, Red)
+    STYLES = {
+        "bold": {
+            "name": "Hormozi Gold",
+            "active_color": "&H0000E6FF&",   # Electric Neon Yellow / Gold
+            "inactive_color": "&H00FFFFFF&", # Clean White
+            "font_size": 76,
+            "outline": 8,
+            "scale": 118
+        },
+        "neon": {
+            "name": "Cyber Cyan",
+            "active_color": "&H00FFF600&",   # Vibrant Cyan
+            "inactive_color": "&H00FFFFFF&",
+            "font_size": 76,
+            "outline": 8,
+            "scale": 118
+        },
+        "green": {
+            "name": "Viral Emerald",
+            "active_color": "&H0033FF55&",   # Bright Neon Green
+            "inactive_color": "&H00FFFFFF&",
+            "font_size": 76,
+            "outline": 8,
+            "scale": 118
+        },
+        "minimal": {
+            "name": "Minimal White",
+            "active_color": "&H0000FFFF&",
+            "inactive_color": "&H00F0F0F0&",
+            "font_size": 66,
+            "outline": 5,
+            "scale": 108
+        }
+    }
+
     def __init__(
         self,
         font_name: str = "Arial",
-        font_size: int = 68,
-        active_color: str = "&H002BFF&",    # Vibrant neon yellow/gold in ASS BGR (&H00BBGGRR&)
-        inactive_color: str = "&H00FFFFFF&",  # Pure white
-        outline_color: str = "&H00000000&",   # Deep black
-        words_per_line: int = 4
+        default_style: str = "bold",
+        words_per_line: int = 3
     ):
         self.font_name = font_name
-        self.font_size = font_size
-        self.active_color = active_color
-        self.inactive_color = inactive_color
-        self.outline_color = outline_color
+        self.default_style = default_style
         self.words_per_line = words_per_line
 
     def generate_ass(
@@ -44,19 +74,27 @@ class SubtitleGenerator:
         output_ass_path: str,
         time_offset: float = 0.0,
         hook_headline: Optional[str] = None,
-        duration: Optional[float] = None
+        duration: Optional[float] = None,
+        captions_style: str = "bold"
     ) -> str:
         """
-        Generate a .ass subtitle file with word-by-word karaoke lighting and hook header.
+        Generate an eye-catching .ass subtitle file with word-by-word karaoke lighting and hook header.
         - time_offset: subtracted from word start/end to normalize to clip start = 0.0s.
         """
         os.makedirs(os.path.dirname(os.path.abspath(output_ass_path)), exist_ok=True)
+
+        cfg = self.STYLES.get(captions_style.lower(), self.STYLES["bold"])
+        active_color = cfg["active_color"]
+        inactive_color = cfg["inactive_color"]
+        font_size = cfg["font_size"]
+        outline_size = cfg["outline"]
+        scale_pct = cfg["scale"]
 
         # Normalize word timestamps relative to clip start
         norm_words = []
         for w in words:
             w_start = max(0.0, w.get("start", 0.0) - time_offset)
-            w_end = max(w_start + 0.1, w.get("end", 0.0) - time_offset)
+            w_end = max(w_start + 0.08, w.get("end", 0.0) - time_offset)
             clean_word = w.get("word", "").strip().upper()
             if clean_word:
                 norm_words.append({
@@ -65,7 +103,7 @@ class SubtitleGenerator:
                     "end": w_end
                 })
 
-        # Group words into short visual chunks (3-5 words each)
+        # Group words into short punchy visual chunks (2-3 words each for maximum mobile legibility)
         chunks = []
         current_chunk = []
         for w in norm_words:
@@ -86,39 +124,38 @@ class SubtitleGenerator:
             "",
             "[V4+ Styles]",
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-            # Dialogue Style: centered lower third (Alignment 2, MarginV 480)
-            f"Style: Karaoke,{self.font_name},{self.font_size},{self.inactive_color},&H000000FF&,{self.outline_color},&H90000000&,-1,0,0,0,100,100,2,0,1,6,3,2,60,60,480,1",
-            # Hook Banner Style: top center (Alignment 8, MarginV 240)
-            f"Style: HookBanner,{self.font_name},52,&H0000FFFF&,&H000000FF&,{self.outline_color},&HB0000000&,-1,0,0,0,100,100,1,0,1,5,3,8,40,40,240,1",
+            # Dialogue Karaoke Style: centered in lower third (Alignment 2, MarginV 520) with heavy black outline
+            f"Style: Karaoke,{self.font_name},{font_size},{inactive_color},&H000000FF&,&H00000000&,&H00000000&,-1,0,0,0,100,100,2,0,1,{outline_size},3,2,60,60,520,1",
+            # Hook Banner Style: solid background pill box at top center (Alignment 8, MarginV 260, BorderStyle 3 = Opaque Box)
+            f"Style: HookBanner,{self.font_name},52,&H0000FFFF&,&H000000FF&,&H00000000&,&HC0000000&,-1,0,0,0,100,100,1,0,3,10,0,8,40,40,260,1",
             "",
             "[Events]",
             "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
         ]
 
-        # Add Hook Banner Event if provided
+        # Top Hook Banner Event (persists for full clip)
         if hook_headline:
             banner_end = format_ass_time(duration if duration else (norm_words[-1]["end"] if norm_words else 15.0))
-            lines.append(f"Dialogue: 1,0:00:00.00,{banner_end},HookBanner,,0,0,0,,{hook_headline}")
+            clean_headline = hook_headline.strip().upper()
+            lines.append(f"Dialogue: 1,0:00:00.00,{banner_end},HookBanner,,0,0,0,,{clean_headline}")
 
-        # Build dynamic word highlighting dialogues for each chunk
+        # Dynamic word-level highlighting events
         for chunk in chunks:
-            chunk_start = chunk[0]["start"]
             chunk_end = chunk[-1]["end"]
 
             for active_idx, active_word in enumerate(chunk):
                 w_start = format_ass_time(active_word["start"])
-                # Extend active highlight until the next word starts or chunk ends
                 next_start = chunk[active_idx + 1]["start"] if active_idx + 1 < len(chunk) else chunk_end
                 w_end = format_ass_time(max(active_word["end"], next_start))
 
-                # Assemble chunk text with active word highlighted
+                # Assemble chunk with current active word enlarged and highlighted in vibrant neon
                 chunk_tokens = []
                 for idx, w in enumerate(chunk):
                     if idx == active_idx:
-                        # Highlighted active word: bold yellow + scale up slightly
-                        token = f"{{\\c{self.active_color}\\fscx112\\fscy112}}{w['word']}{{\\rKaraoke}}"
+                        # Eye-catching neon color + scale up
+                        token = f"{{\\c{active_color}\\fscx{scale_pct}\\fscy{scale_pct}}}{w['word']}{{\\rKaraoke}}"
                     else:
-                        token = f"{{\\c{self.inactive_color}}}{w['word']}"
+                        token = f"{{\\c{inactive_color}}}{w['word']}"
                     chunk_tokens.append(token)
 
                 event_text = " ".join(chunk_tokens)

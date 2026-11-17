@@ -1,6 +1,7 @@
 """
 retention_scorer.py - Algorithmic high-retention moment detector for viral short-form clips.
 Analyzes transcript hooks, speech cadence, silence, and audio RMS energy dynamics.
+Generates dynamic, topic-tailored clickbait titles for each clip.
 """
 
 import math
@@ -76,7 +77,7 @@ class RetentionScorer:
 
                 # Compute RMS
                 rms = np.sqrt(np.mean(samples.astype(np.float64) ** 2))
-                # Normalize to 0-100 scale (typical 16-bit max is 32767)
+                # Normalize to 0-100 scale
                 norm_energy = min(100.0, (rms / 8000.0) * 100.0)
                 return float(norm_energy)
         except Exception:
@@ -87,7 +88,7 @@ class RetentionScorer:
         Score the opening sentence (first 3-5 seconds) for viral curiosity and attention grabbing.
         """
         text_lower = text.lower()
-        score = 20.0  # Baseline
+        score = 20.0
         for pattern, bonus in self.hook_patterns:
             if re.search(pattern, text_lower):
                 score += bonus
@@ -127,16 +128,17 @@ class RetentionScorer:
         self,
         transcript: Dict[str, Any],
         audio_path: Optional[str] = None,
-        top_k: int = 5
+        top_k: int = 8
     ) -> List[Dict[str, Any]]:
         """
-        Extract top-k candidate viral clips from the transcript and audio metrics.
+        Extract top-k candidate viral clips with unique IDs, topic-tailored clickbait titles,
+        and full metadata.
         """
         segments = transcript.get("segments", [])
         if not segments:
-            # Fallback if no segments: create a single clip from available duration
             duration = transcript.get("duration", 30.0)
             return [{
+                "id": "clip_1_0",
                 "rank": 1,
                 "start": 0.0,
                 "end": min(duration, self.target_clip_duration),
@@ -145,7 +147,7 @@ class RetentionScorer:
                 "hook_score": 70.0,
                 "pacing_score": 75.0,
                 "energy_score": 70.0,
-                "hook_headline": "🔥 WATCH THIS HIGHLIGHT",
+                "hook_headline": "🔥 MUST WATCH HIGHLIGHT 🤯",
                 "text": transcript.get("full_text", "")[:200],
                 "words": transcript.get("words", [])
             }]
@@ -153,7 +155,6 @@ class RetentionScorer:
         candidate_clips = []
         n_segs = len(segments)
 
-        # Sliding window approach over segments to build clips of 15s - 60s
         for i in range(n_segs):
             start_seg = segments[i]
             start_time = start_seg["start"]
@@ -171,8 +172,8 @@ class RetentionScorer:
 
                 if duration >= self.min_clip_duration:
                     if duration <= self.max_clip_duration:
-                        # Candidate found: calculate scores
                         first_line = start_seg["text"]
+                        full_clip_text = " ".join(current_text_parts)
                         hook_score = self._score_hook(first_line)
                         pacing_score = self._score_pacing(current_words, duration)
 
@@ -181,11 +182,10 @@ class RetentionScorer:
                         if audio_path and os.path.exists(audio_path):
                             energy_score = self._compute_audio_energy(audio_path, start_time, end_time)
 
-                        # Target duration proximity bonus (reward ~30-45s sweet spot)
+                        # Duration sweet spot bonus (~25s to 45s)
                         dur_diff = abs(duration - self.target_clip_duration)
                         duration_bonus = max(0.0, 15.0 - (dur_diff * 0.5))
 
-                        # Overall retention composite score
                         composite_score = (
                             (hook_score * 0.35) +
                             (pacing_score * 0.30) +
@@ -194,8 +194,8 @@ class RetentionScorer:
                         )
                         composite_score = round(min(99.0, max(30.0, composite_score)), 1)
 
-                        # Generate viral hook headline
-                        headline = self._generate_headline(first_line)
+                        # Dynamic, topic-tailored clickbait headline
+                        headline = self._generate_headline(full_clip_text, first_line)
 
                         candidate_clips.append({
                             "start": round(start_time, 2),
@@ -206,16 +206,16 @@ class RetentionScorer:
                             "pacing_score": round(pacing_score, 1),
                             "energy_score": round(energy_score, 1),
                             "hook_headline": headline,
-                            "text": " ".join(current_text_parts),
+                            "text": full_clip_text,
                             "words": current_words.copy()
                         })
                     else:
-                        break  # Exceeded max duration
+                        break
 
         if not candidate_clips:
-            # Create at least one fallback window
             dur = min(segments[-1]["end"], self.max_clip_duration)
             all_words = transcript.get("words", [])
+            clip_text = " ".join(s["text"] for s in segments)
             candidate_clips.append({
                 "start": 0.0,
                 "end": dur,
@@ -224,15 +224,15 @@ class RetentionScorer:
                 "hook_score": 70.0,
                 "pacing_score": 75.0,
                 "energy_score": 65.0,
-                "hook_headline": "🔥 MUST WATCH MOMENT",
-                "text": " ".join(s["text"] for s in segments),
+                "hook_headline": self._generate_headline(clip_text, segments[0]["text"]),
+                "text": clip_text,
                 "words": all_words
             })
 
         # Sort candidate clips by retention score descending
         candidate_clips.sort(key=lambda c: c["retention_score"], reverse=True)
 
-        # Non-maximum suppression: prevent overlapping clips with >70% time overlap
+        # Non-maximum suppression: prevent heavy overlapping clips (>50% time overlap)
         selected_clips = []
         for clip in candidate_clips:
             overlap = False
@@ -243,20 +243,94 @@ class RetentionScorer:
                     overlap = True
                     break
             if not overlap:
-                clip["rank"] = len(selected_clips) + 1
+                idx = len(selected_clips) + 1
+                clip["id"] = f"clip_{idx}_{int(clip['start'])}"
+                clip["rank"] = idx
                 selected_clips.append(clip)
                 if len(selected_clips) >= top_k:
                     break
 
         return selected_clips
 
-    def _generate_headline(self, first_line: str) -> str:
+    def _generate_headline(self, full_text: str, first_line: str) -> str:
         """
-        Create a punchy viral banner headline from the first spoken sentence.
+        Create a high-CTR, punchy clickbait banner headline matching the clip topic and mood.
         """
-        clean = first_line.strip().strip('"').strip("'")
-        if len(clean) > 40:
-            words = clean.split()
+        text_lower = full_text.lower()
+        seed = abs(hash(full_text))
+
+        # 1. Mistakes, warnings & warnings
+        if re.search(r"\b(mistake|wrong|fail|error|destroy|ruin|stop|never|avoid|warning)\b", text_lower):
+            templates = [
+                "🚨 STOP MAKING THIS HUGE MISTAKE 🛑",
+                "⚠️ THE FATAL ERROR YOU MUST AVOID 💥",
+                "🛑 NEVER DO THIS AGAIN 😱",
+                "⚠️ WHY 99% OF PEOPLE GET THIS WRONG ❌",
+                "🚨 WATCH THIS BEFORE YOU MAKE A MISTAKE 🛑"
+            ]
+            return templates[seed % len(templates)]
+
+        # 2. Secrets, truth & untold stories
+        elif re.search(r"\b(secret|nobody|truth|hidden|lie|actually|reveal|exposed)\b", text_lower):
+            templates = [
+                "🤫 THE UNTOLD TRUTH NOBODY TALKS ABOUT 💥",
+                "🔓 THE SECRET THEY DON'T WANT YOU TO KNOW 😱",
+                "🚨 THE BRUTAL REALITY EXPOSED 🤯",
+                "🤫 WHAT HAPPENS BEHIND CLOSED DOORS ⚠️",
+                "🔥 THIS IS THE UNFILTERED TRUTH 💥"
+            ]
+            return templates[seed % len(templates)]
+
+        # 3. High action, race, fast moments
+        elif re.search(r"\b(race|kart|speed|fast|win|crazy|insane|wild|catch|run|danger|epic)\b", text_lower):
+            templates = [
+                "🏁 THE CRAZIEST MOMENT EVER RECORDED 🏎️",
+                "🤯 WAIT TILL THE VERY END 😱",
+                "🔥 DO NOT BLINK OR YOU'LL MISS IT ⚡",
+                "🚨 YOU WON'T BELIEVE WHAT HAPPENED 🤯",
+                "😱 NOBODY EXPECTED THIS FINISH 🏁"
+            ]
+            return templates[seed % len(templates)]
+
+        # 4. How-to, routines, tips & hacks
+        elif re.search(r"\b(how to|simple|trick|hack|routine|easy|tip|advice|cadence|habit)\b", text_lower):
+            templates = [
+                "💡 THIS ONE SIMPLE TRICK CHANGED EVERYTHING 📈",
+                "🚀 THE ULTIMATE SHORTCUT YOU NEED TODAY 🎯",
+                "⚡ DO THIS SIMPLE ROUTINE EVERY DAY 🔥",
+                "💡 TRY THIS HACK AND THANK ME LATER 🤯",
+                "📈 THE EXACT METHOD THAT DOUBLED RESULTS 🚀"
+            ]
+            return templates[seed % len(templates)]
+
+        # 5. Money, business & growth
+        elif re.search(r"\b(money|rich|million|wealth|business|earn|scale|income|dollar)\b", text_lower):
+            templates = [
+                "💰 THE 1% WEALTH RULE NO ONE SHARES 📈",
+                "💵 HOW TO SCALE FASTER THAN EVER 🚀",
+                "💸 STOP LOSING MONEY ON THIS 🛑",
+                "📈 THE MILLION-DOLLAR LESSON 💥"
+            ]
+            return templates[seed % len(templates)]
+
+        # 6. Questions
+        elif re.search(r"\b(why|what if|is it|can you|did you)\b", text_lower) or "?" in first_line:
+            clean_q = first_line.split("?")[0].strip()
+            words = clean_q.split()
+            if 3 <= len(words) <= 7:
+                return f"❓ {clean_q.upper()}? 🤯"
+            else:
+                templates = [
+                    "❓ WHY DOES NOBODY UNDERSTAND THIS? 🤯",
+                    "😱 THE QUESTION EVERYONE IS ASKING ❓",
+                    "🤯 COULD THIS REALLY BE POSSIBLE? 💥"
+                ]
+                return templates[seed % len(templates)]
+
+        # Default fallback extracting first punchy sentence
+        clean = first_line.strip().split(".")[0].strip()
+        words = clean.split()
+        if len(words) > 7:
             clean = " ".join(words[:6]) + "..."
         clean_upper = clean.upper()
         if not clean_upper.endswith("!") and not clean_upper.endswith("?"):

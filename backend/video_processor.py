@@ -33,6 +33,7 @@ class VideoProcessor:
         hook_headline: Optional[str] = None,
         reframe_mode: str = "blur_padding",
         protection_preset: str = "subtle",
+        captions_style: str = "bold",
         custom_protection: Optional[Dict[str, Any]] = None,
         output_clip_path: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -66,7 +67,8 @@ class VideoProcessor:
                 output_ass_path=subtitle_ass_path,
                 time_offset=start_time,
                 hook_headline=hook_headline,
-                duration=duration
+                duration=duration,
+                captions_style=captions_style
             )
 
         # 3. Build FFmpeg filter graph
