@@ -674,7 +674,7 @@
     function finishProcessing(clips, sourceName) {
       allClips = clips.map((c, i) => ({
         ...c,
-        id: c.id || `clip_${i + 1}_${int(c.start || 0)}`,
+        id: c.id || `clip_${i + 1}_${Math.floor(c.start || 0)}`,
         rank: i + 1
       }));
 
@@ -791,6 +791,8 @@
       if (clip.rendered_url) {
         spinner.classList.add('hidden');
         player.src = clip.rendered_url;
+        player.muted = false;
+        player.volume = 1.0;
         dlBtn.href = clip.rendered_url;
         player.load();
         player.play().catch(() => {});
@@ -835,6 +837,8 @@
 
         spinner.classList.add('hidden');
         player.src = data.download_url;
+        player.muted = false;
+        player.volume = 1.0;
         dlBtn.href = data.download_url;
         dlBtn.classList.remove('opacity-50', 'pointer-events-none');
         player.load();

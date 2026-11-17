@@ -20,7 +20,15 @@ class Transcriber:
         """
         self.model_size = model_size
         if device is None:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+            can_cuda = False
+            if torch.cuda.is_available():
+                try:
+                    import ctypes
+                    ctypes.CDLL("cublas64_12.dll")
+                    can_cuda = True
+                except Exception:
+                    can_cuda = False
+            self.device = "cuda" if can_cuda else "cpu"
         else:
             self.device = device
 

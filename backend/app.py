@@ -44,28 +44,63 @@ ANALYSIS_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
 
 def get_media_item(media_id: str) -> Optional[Dict[str, Any]]:
-    """Look up media item in memory or recover from disk storage."""
+    """Look up media item in memory or recover from disk storage with auto audio/thumb recovery."""
     if media_id in MEDIA_REGISTRY:
         return MEDIA_REGISTRY[media_id]
 
     downloads_dir = os.path.abspath("storage/downloads")
+    audio_dir = os.path.abspath("storage/audio")
+    thumb_dir = os.path.abspath("storage/temp")
+
     if os.path.exists(downloads_dir):
         for f in os.listdir(downloads_dir):
-            if f.startswith(f"{media_id}_") and f.endswith((".mp4", ".mkv", ".mov", ".webm")):
+            if f.startswith(f"{media_id}_") and f.endswith((".mp4", ".mkv", ".mov", ".webm", ".avi")):
                 video_path = os.path.join(downloads_dir, f)
-                base = os.path.splitext(f)[0]
-                audio_dir = os.path.abspath("storage/audio")
-                audio_path = os.path.join(audio_dir, f"{base}.wav")
-                thumb_dir = os.path.abspath("storage/temp")
-                thumb_path = os.path.join(thumb_dir, f"{base}_thumb.jpg")
                 try:
                     meta = probe_video(video_path)
                 except Exception:
                     meta = {"duration": 30.0, "width": 1280, "height": 720}
 
+                # Robust audio path discovery by media_id prefix
+                audio_path = None
+                if os.path.exists(audio_dir):
+                    for af in os.listdir(audio_dir):
+                        if af.startswith(f"{media_id}_") and af.endswith((".wav", ".mp3", ".m4a", ".aac")):
+                            audio_path = os.path.join(audio_dir, af)
+                            break
+
+                # Self-healing: if audio file not found on disk, extract it on the fly
+                if not audio_path or not os.path.exists(audio_path):
+                    from backend.media_utils import extract_audio
+                    audio_path = os.path.join(audio_dir, f"{media_id}_recovered.wav")
+                    try:
+                        extract_audio(video_path, audio_path)
+                    except Exception as e:
+                        print(f"[Warning] Failed to extract audio on demand: {e}")
+
+                # Robust thumbnail discovery by media_id prefix
+                thumb_path = None
+                if os.path.exists(thumb_dir):
+                    for tf in os.listdir(thumb_dir):
+                        if tf.startswith(f"{media_id}_") and tf.endswith(("_thumb.jpg", "_thumb.png", ".jpg", ".png")):
+                            thumb_path = os.path.join(thumb_dir, tf)
+                            break
+
+                if not thumb_path or not os.path.exists(thumb_path):
+                    from backend.media_utils import extract_frame
+                    thumb_path = os.path.join(thumb_dir, f"{media_id}_thumb.jpg")
+                    try:
+                        thumb_ts = min(1.0, max(0.0, meta["duration"] / 2))
+                        extract_frame(video_path, timestamp_sec=thumb_ts, output_img_path=thumb_path)
+                    except Exception as e:
+                        print(f"[Warning] Failed to extract thumbnail on demand: {e}")
+
+                title_part = f.split("_", 1)[1] if "_" in f else f
+                title = os.path.splitext(title_part)[0]
+
                 item = {
                     "id": media_id,
-                    "title": f.split("_", 1)[1] if "_" in f else f,
+                    "title": title,
                     "video_path": video_path,
                     "audio_path": audio_path,
                     "thumb_path": thumb_path,
@@ -102,11 +137,20 @@ class RegenerateHeadlineRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
+    cuda_works = False
+    if torch.cuda.is_available():
+        try:
+            import ctypes
+            ctypes.CDLL("cublas64_12.dll")
+            cuda_works = True
+        except Exception:
+            cuda_works = False
+
     return {
         "status": "online",
         "service": "Retention Auto-Clipper",
-        "cuda_available": torch.cuda.is_available(),
-        "device": "cuda" if torch.cuda.is_available() else "cpu"
+        "cuda_available": cuda_works,
+        "device": "cuda" if cuda_works else "cpu"
     }
 
 

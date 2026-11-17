@@ -86,13 +86,12 @@ class VideoProcessor:
             "-to", f"{end_time:.3f}",
             "-i", source_video_path,
             "-filter_complex", filter_graph,
-            "-map", "[v]"
+            "-map", "[v]",
+            "-map", "0:a?"
         ]
 
         if audio_shield_filter:
             cmd.extend(["-af", audio_shield_filter])
-        else:
-            cmd.extend(["-map", "0:a?"])
 
         # Metadata stripping arguments
         cmd.extend(metadata_args)
