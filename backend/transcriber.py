@@ -1,9 +1,13 @@
 """
 transcriber.py - Local speech transcription using faster-whisper with word-level timestamps.
-100% free and open-source, runs on local GPU/CPU.
+100% free and open-source, runs on local GPU with automatic CPU fallback.
 """
 
 import os
+
+# Prevent OpenMP runtime clash between Anaconda/Intel MKL, PyTorch, and ctranslate2
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 from typing import Any, Dict, List, Optional
 import torch
 
@@ -13,7 +17,6 @@ class Transcriber:
         """
         Initialize the local Whisper model.
         Available sizes: 'tiny', 'base', 'small', 'medium', 'large-v3'.
-        'base' is an optimal tradeoff of speed (realtime on GPU) and accuracy.
         """
         self.model_size = model_size
         if device is None:
@@ -29,28 +32,67 @@ class Transcriber:
         self._model = None
 
     def _get_model(self):
-        if self._model is None:
-            from faster_whisper import WhisperModel
-            self._model = WhisperModel(
-                self.model_size,
-                device=self.device,
-                compute_type=self.compute_type,
-                download_root=os.path.abspath("storage/models")
-            )
+        if self._model is not None:
+            return self._model
+
+        from faster_whisper import WhisperModel
+        download_root = os.path.abspath("storage/models")
+
+        # Attempt CUDA first if requested; fallback gracefully to CPU if cuBLAS/CUDA 12 DLLs are missing
+        if self.device == "cuda":
+            try:
+                self._model = WhisperModel(
+                    self.model_size,
+                    device="cuda",
+                    compute_type=self.compute_type,
+                    download_root=download_root
+                )
+                return self._model
+            except Exception as e:
+                print(f"[Transcriber Warning] CUDA init failed ({e}). Falling back to CPU int8 mode.")
+                self.device = "cpu"
+                self.compute_type = "int8"
+
+        self._model = WhisperModel(
+            self.model_size,
+            device="cpu",
+            compute_type="int8",
+            download_root=download_root
+        )
         return self._model
 
     def transcribe(self, audio_path: str, language: Optional[str] = None) -> Dict[str, Any]:
         """
-        Transcribe an audio file (16kHz WAV recommended) and return word-level timestamps.
+        Transcribe an audio file and return word-level timestamps with automatic fallback.
         """
         if not os.path.exists(audio_path):
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
+        try:
+            return self._run_transcription(audio_path, language=language)
+        except RuntimeError as e:
+            if "cublas" in str(e).lower() or "cuda" in str(e).lower() or self.device == "cuda":
+                print(f"[Transcriber Warning] CUDA runtime execution error ({e}). Retrying on CPU...")
+                from faster_whisper import WhisperModel
+                self.device = "cpu"
+                self.compute_type = "int8"
+                self._model = WhisperModel(
+                    self.model_size,
+                    device="cpu",
+                    compute_type="int8",
+                    download_root=os.path.abspath("storage/models")
+                )
+                return self._run_transcription(audio_path, language=language)
+            else:
+                raise e
+
+    def _run_transcription(self, audio_path: str, language: Optional[str] = None) -> Dict[str, Any]:
         model = self._get_model()
 
         segments_gen, info = model.transcribe(
             audio_path,
             language=language,
+            beam_size=1,  # Fast greedy decoding for high throughput
             word_timestamps=True,
             vad_filter=True,
             vad_parameters=dict(min_silence_duration_ms=500)

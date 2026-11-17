@@ -2,8 +2,10 @@
 app.py - FastAPI application for Retention Auto-Clipper Studio.
 """
 
-import json
 import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+import json
 import shutil
 import uuid
 from typing import Any, Dict, List, Optional

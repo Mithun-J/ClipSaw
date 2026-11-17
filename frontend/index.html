@@ -468,7 +468,7 @@
       document.getElementById('mediaRes').textContent = media.resolution;
 
       // Step 2: Trigger Local Transcription & Retention Analysis
-      showProgress('Transcribing audio locally (faster-whisper) & scoring hooks...', 65);
+      showProgress('Transcribing speech locally & calculating retention (takes ~1-2 min for long videos)...', 65);
 
       try {
         const res = await fetch('/api/analyze', {
@@ -476,15 +476,18 @@
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({media_id: activeMediaId, model_size: 'base'})
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server responded with status ${res.status}`);
+        }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Analysis failed');
 
         showProgress('Viral clips detected!', 100);
         setTimeout(hideProgress, 800);
 
         renderClips(data.clips);
       } catch (err) {
-        alert('Analysis error: ' + err.message);
+        alert('Analysis error: ' + (err.message || 'Server connection lost. Please verify run_studio.py is running.'));
         hideProgress();
       }
     }

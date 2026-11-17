@@ -2,6 +2,9 @@
 run_studio.py - Launch Retention Auto-Clipper Studio Web UI and API.
 """
 
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 import sys
 import uvicorn
 
