@@ -1,608 +1,917 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Retention Auto-Clipper Studio</title>
+  <title>CLIPSAW — Turn long videos into viral clips</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Neo-Brutalist Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          },
           colors: {
-            brand: {
-              50: '#f0fdfa',
-              400: '#2dd4bf',
-              500: '#14b8a6',
-              600: '#0d9488',
-              accent: '#f59e0b',
-              neon: '#00ffcc',
-              shield: '#10b981'
-            }
+            primary: '#facc15',   // Vivid Neo-Brutalist Yellow
+            accent: '#bef264',    // Lime
+            pink: '#f43f5e',      // Vivid Pink
+            cyan: '#38bdf8',      // Vivid Cyan
+            ink: '#09090b',       // Deep black
+            canvas: '#fdfbf7',    // Cream/off-white retro background
+            muted: '#71717a'
           }
         }
       }
     }
   </script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <style>
     body {
-      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #030712 100%);
-      min-height: 100vh;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #fdfbf7;
+      color: #09090b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .glass {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
     }
-    .neon-border:focus-within {
-      box-shadow: 0 0 15px rgba(45, 212, 191, 0.35);
-      border-color: #2dd4bf;
+
+    /* Neo-Brutalist Shadows & Borders */
+    .border-brutal {
+      border: 2px solid #09090b;
     }
-    .vertical-phone {
+    .border-brutal-3 {
+      border: 3px solid #09090b;
+    }
+    .shadow-brutal {
+      box-shadow: 4px 4px 0px #09090b;
+    }
+    .shadow-brutal-sm {
+      box-shadow: 2px 2px 0px #09090b;
+    }
+    .shadow-brutal-lg {
+      box-shadow: 6px 6px 0px #09090b;
+    }
+    .shadow-brutal-xl {
+      box-shadow: 8px 8px 0px #09090b;
+    }
+
+    /* Interactive button states */
+    .btn-brutal {
+      border: 2px solid #09090b;
+      box-shadow: 4px 4px 0px #09090b;
+      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-brutal:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #09090b;
+    }
+    .btn-brutal:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #09090b;
+    }
+
+    /* Grid background */
+    .bg-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(9, 9, 11, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(9, 9, 11, 0.06) 1px, transparent 1px);
+    }
+
+    /* Marquee animation */
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: 200%;
+      animation: marquee 22s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    /* Wiggle badge */
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    .animate-wiggle {
+      animation: wiggle 3s ease-in-out infinite;
+    }
+
+    .aspect-9-16 {
       aspect-ratio: 9 / 16;
-      max-width: 320px;
     }
   </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="min-h-screen flex flex-col">
 
-  <!-- TOP NAV -->
-  <header class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between pb-6 mb-8 border-b border-slate-800 gap-4">
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
-        <i class="fa-solid fa-bolt text-2xl text-white"></i>
-      </div>
-      <div>
-        <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-teal-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent">
-          RETENTION CLIPPER
-        </h1>
-        <p class="text-xs text-slate-400 font-medium">Auto Viral Short-Form Engine • Free Local Open-Source AI</p>
-      </div>
-    </div>
+  <!-- TOAST NOTIFICATION POPUP -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- STATUS BADGES -->
-    <div class="flex items-center gap-3 flex-wrap">
-      <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-        <i class="fa-solid fa-shield-halved text-sm"></i>
-        <span>Anti-Copyright Shield: Active</span>
+  <!-- SITE HEADER -->
+  <header class="border-b-2 border-black bg-white sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 bg-primary border-2 border-black shadow-brutal-sm flex items-center justify-center font-display font-black text-xl group-hover:-rotate-6 transition">
+            ⚡
+          </div>
+          <span class="font-display text-2xl font-black tracking-tight uppercase">CLIPSAW</span>
+        </a>
+        <span class="hidden sm:inline-block border-2 border-black bg-accent px-2.5 py-0.5 font-display text-[11px] font-bold uppercase shadow-brutal-sm">
+          <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI Video Clipper
+        </span>
       </div>
-      <div id="cudaBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-xs">
-        <i class="fa-solid fa-microchip text-teal-400"></i>
-        <span id="cudaText">Checking GPU...</span>
+
+      <div class="flex items-center gap-3">
+        <!-- Anti-Copyright Shield Active Badge -->
+        <div class="flex items-center gap-1.5 border-2 border-black bg-[#bef264] px-3 py-1 font-display text-xs font-bold shadow-brutal-sm">
+          <i class="fa-solid fa-shield-halved text-emerald-800"></i>
+          <span class="hidden md:inline">ANTI-COPYRIGHT:</span> ACTIVE
+        </div>
+
+        <!-- GPU status badge -->
+        <div id="gpuBadge" class="hidden sm:flex items-center gap-1.5 border-2 border-black bg-white px-3 py-1 font-display text-xs font-bold shadow-brutal-sm">
+          <i class="fa-solid fa-microchip text-slate-700"></i>
+          <span id="gpuText">100% Free & Local</span>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <main class="flex-1">
 
-    <!-- LEFT COLUMN: INGESTION & CONTROLS (5 cols) -->
-    <section class="lg:col-span-5 flex flex-col gap-6">
-
-      <!-- STEP 1: INGESTION CARD -->
-      <div class="glass rounded-2xl p-6 shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold flex items-center gap-2 text-slate-100">
-            <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 text-xs flex items-center justify-center font-black">1</span>
-            Import Video
-          </h2>
-          <span class="text-xs text-slate-400">YouTube, Twitch, or Local File</span>
+    <!-- HERO SECTION -->
+    <section class="relative border-b-2 border-black bg-grid overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16 grid lg:grid-cols-[1.35fr_1fr] gap-10 items-center">
+        <div>
+          <span class="inline-flex items-center gap-2 border-2 border-black bg-accent px-3 py-1 font-display text-xs font-bold uppercase shadow-brutal-sm">
+            <i class="fa-solid fa-bolt"></i> Free Open-Source Clipper
+          </span>
+          <h1 class="mt-5 font-display text-5xl md:text-7xl font-bold leading-[0.95] tracking-tighter text-black">
+            Long video in.<br>
+            <span class="relative inline-block bg-primary px-2.5 mt-2 border-2 border-black shadow-brutal">
+              Viral clips
+            </span> out.
+          </h1>
+          <p class="mt-6 text-lg text-slate-700 max-w-lg font-medium leading-relaxed">
+            Drop a podcast, YouTube link, or stream. CLIPSAW transcribes speech locally, isolates high-attention hooks, reframes to 9:16 vertical, and protects against copyright strikes.
+          </p>
         </div>
 
-        <!-- TABS -->
-        <div class="flex border-b border-slate-700/60 mb-5">
-          <button id="tabUrlBtn" onclick="switchTab('url')" class="pb-2.5 px-4 font-semibold text-sm border-b-2 border-teal-400 text-teal-300 transition">
-            <i class="fa-solid fa-link mr-1.5"></i> Video Link
-          </button>
-          <button id="tabFileBtn" onclick="switchTab('file')" class="pb-2.5 px-4 font-medium text-sm text-slate-400 hover:text-slate-200 transition">
-            <i class="fa-solid fa-file-video mr-1.5"></i> Local File
-          </button>
-        </div>
-
-        <!-- URL INPUT TAB -->
-        <div id="tabUrl" class="space-y-4">
-          <div class="neon-border rounded-xl border border-slate-700 bg-slate-900/80 flex items-center p-2.5 transition">
-            <i class="fa-brands fa-youtube text-red-500 text-xl mx-2"></i>
-            <input type="text" id="videoUrlInput" placeholder="Paste YouTube or video link here..."
-                   class="bg-transparent border-0 flex-1 text-sm text-white focus:outline-none placeholder-slate-500">
+        <!-- Stacked thumbnails mock -->
+        <div class="relative mx-auto hidden lg:block w-full max-w-sm h-80" aria-hidden="true">
+          <div class="absolute aspect-9-16 w-44 border-2 border-black bg-slate-900 shadow-brutal-lg left-0 top-6 -rotate-6 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=600&auto=format&fit=crop&q=80" alt="Podcast" class="w-full h-full object-cover opacity-85">
+            <div class="absolute bottom-2 left-2 right-2 bg-black/80 p-1.5 text-[10px] font-display font-bold text-white border border-white">
+              PODCAST CUT #1
+            </div>
           </div>
-          <button onclick="handleUrlIngest()" id="fetchBtn"
-                  class="w-full py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-slate-950 shadow-lg shadow-teal-500/25 transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>Fetch & Analyze Viral Hooks</span>
+          <div class="absolute aspect-9-16 w-44 border-2 border-black bg-slate-900 shadow-brutal-lg right-0 top-2 rotate-6 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80" alt="Talk" class="w-full h-full object-cover opacity-85">
+            <div class="absolute bottom-2 left-2 right-2 bg-black/80 p-1.5 text-[10px] font-display font-bold text-white border border-white">
+              KEYNOTE MOMENT
+            </div>
+          </div>
+          <div class="absolute aspect-9-16 w-44 border-2 border-black bg-slate-900 shadow-brutal-lg left-1/2 top-0 -translate-x-1/2 z-10 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80" alt="Stream" class="w-full h-full object-cover opacity-90">
+            <div class="absolute top-2 left-2 bg-primary border-2 border-black px-1.5 py-0.5 font-display text-[10px] font-black shadow-brutal-sm">
+              TOP VIRAL
+            </div>
+            <div class="absolute bottom-2 left-2 right-2 bg-black/90 p-2 text-[10px] font-display font-bold text-primary border border-white">
+              🚨 99% OF PEOPLE MAKE THIS MISTAKE 🤯
+            </div>
+          </div>
+          <span class="absolute -bottom-2 right-4 z-20 animate-wiggle border-2 border-black bg-accent px-3 py-1 font-display text-sm font-bold shadow-brutal">
+            🔥 97 / 100 Virality
+          </span>
+        </div>
+      </div>
+
+      <!-- UPLOAD & SETTINGS PANEL -->
+      <div class="max-w-7xl mx-auto px-4 md:px-8 pb-14">
+        <div class="border-2 border-black bg-white shadow-brutal-lg p-6 md:p-8">
+          <!-- TABS -->
+          <div class="flex items-center gap-3 border-b-2 border-black pb-4 mb-6">
+            <button id="tabUrlBtn" onclick="switchUploadTab('url')"
+                    class="px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-primary shadow-brutal-sm transition">
+              <i class="fa-brands fa-youtube mr-1.5 text-red-600"></i> YouTube / Video URL
+            </button>
+            <button id="tabFileBtn" onclick="switchUploadTab('file')"
+                    class="px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-white hover:bg-slate-100 transition">
+              <i class="fa-solid fa-file-video mr-1.5"></i> Local Video File
+            </button>
+          </div>
+
+          <!-- URL INPUT FORM -->
+          <div id="tabUrlContent" class="space-y-6">
+            <div class="flex flex-col md:flex-row gap-3">
+              <div class="flex-1 border-2 border-black bg-slate-50 flex items-center px-4 py-3 shadow-brutal-sm focus-within:bg-white focus-within:shadow-brutal transition">
+                <i class="fa-solid fa-link text-slate-500 mr-3 text-lg"></i>
+                <input type="text" id="urlInput" placeholder="Paste YouTube link here (e.g. https://www.youtube.com/watch?v=...)"
+                       class="w-full bg-transparent border-none text-sm md:text-base font-semibold focus:outline-none placeholder-slate-400">
+              </div>
+              <button onclick="handleStartClipping('url')" id="startClippingBtn"
+                      class="btn-brutal bg-primary px-8 py-3.5 font-display text-sm md:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+                <i class="fa-solid fa-scissors"></i>
+                <span>Clip Video</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- LOCAL FILE UPLOAD FORM -->
+          <div id="tabFileContent" class="hidden space-y-6">
+            <label class="border-2 border-dashed border-black hover:bg-accent/20 p-10 flex flex-col items-center justify-center cursor-pointer transition group">
+              <i class="fa-solid fa-cloud-arrow-up text-4xl mb-3 text-black group-hover:scale-110 transition"></i>
+              <span class="font-display text-base font-bold uppercase">Choose a video file or drag here</span>
+              <span class="text-xs text-muted font-medium mt-1">MP4, MKV, MOV, WebM (up to 4GB)</span>
+              <input type="file" id="fileInput" accept="video/*" class="hidden" onchange="handleFileSelect(event)">
+            </label>
+          </div>
+
+          <!-- STUDIO SETTINGS DRAWER -->
+          <div class="mt-6 pt-6 border-t-2 border-black grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Aspect Ratio -->
+            <div>
+              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fa-solid fa-mobile-screen mr-1"></i> Aspect Ratio
+              </label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="setSetting('aspect', '9:16', this)" class="setting-aspect border-2 border-black bg-primary px-2 py-1.5 font-display text-xs font-bold shadow-brutal-sm">
+                  9:16 Shorts
+                </button>
+                <button type="button" onclick="setSetting('aspect', '1:1', this)" class="setting-aspect border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
+                  1:1 Square
+                </button>
+                <button type="button" onclick="setSetting('aspect', '16:9', this)" class="setting-aspect border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
+                  16:9 Wide
+                </button>
+              </div>
+            </div>
+
+            <!-- Subtitle Captions Style -->
+            <div>
+              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fa-solid fa-closed-captioning mr-1"></i> Captions Style
+              </label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="setSetting('captions', 'bold', this)" class="setting-captions border-2 border-black bg-primary px-2 py-1.5 font-display text-xs font-bold shadow-brutal-sm">
+                  Bold Karaoke
+                </button>
+                <button type="button" onclick="setSetting('captions', 'neon', this)" class="setting-captions border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
+                  Cyber Cyan
+                </button>
+                <button type="button" onclick="setSetting('captions', 'minimal', this)" class="setting-captions border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100">
+                  Minimal
+                </button>
+              </div>
+            </div>
+
+            <!-- Anti-Copyright Shield -->
+            <div>
+              <label class="block font-display text-xs font-bold uppercase tracking-wider mb-2 text-emerald-800">
+                <i class="fa-solid fa-shield-virus mr-1"></i> Anti-Copyright Shield
+              </label>
+              <select id="shieldSelect" onchange="selectedShield = this.value"
+                      class="w-full border-2 border-black bg-[#bef264] px-3 py-1.5 font-display text-xs font-bold shadow-brutal-sm focus:outline-none cursor-pointer">
+                <option value="subtle">Subtle Protection (Safest)</option>
+                <option value="balanced">Balanced Shield (Pitch + Zoom)</option>
+                <option value="aggressive">Aggressive Bypass (Lofi Bed)</option>
+                <option value="off">Off (Original Raw Audio)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEO-BRUTALIST MARQUEE -->
+    <div class="border-b-2 border-black bg-primary py-3 overflow-hidden">
+      <div class="animate-marquee font-display font-black text-xs md:text-sm uppercase tracking-wider flex items-center gap-8 whitespace-nowrap">
+        <span>⚡ 100% FREE & LOCAL OPEN-SOURCE AI</span>
+        <span>•</span>
+        <span>🛡️ ANTI-COPYRIGHT STRIKE SHIELD ACTIVE</span>
+        <span>•</span>
+        <span>📱 9:16 REELS, SHORTS & TIKTOK</span>
+        <span>•</span>
+        <span>🎙️ WHISPER SPEECH-TO-TEXT</span>
+        <span>•</span>
+        <span>🔥 AUTOMATIC HOOK & RETENTION SCORING</span>
+        <span>•</span>
+        <span>✨ DYNAMIC WORD-BY-WORD KARAOKE SUBTITLES</span>
+        <span>•</span>
+        <span>🚀 ZERO API SUBSCRIPTION FEES</span>
+        <span>•</span>
+        <span>⚡ 100% FREE & LOCAL OPEN-SOURCE AI</span>
+        <span>•</span>
+        <span>🛡️ ANTI-COPYRIGHT STRIKE SHIELD ACTIVE</span>
+        <span>•</span>
+        <span>📱 9:16 REELS, SHORTS & TIKTOK</span>
+        <span>•</span>
+        <span>🎙️ WHISPER SPEECH-TO-TEXT</span>
+      </div>
+    </div>
+
+    <!-- PROCESSING PANEL (Visible during processing) -->
+    <section id="processingPanel" class="hidden max-w-7xl mx-auto px-4 md:px-8 py-12 scroll-mt-20">
+      <div class="border-2 border-black bg-white shadow-brutal-xl p-8 max-w-2xl mx-auto">
+        <div class="flex items-center justify-between border-b-2 border-black pb-4 mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-none bg-primary border-2 border-black flex items-center justify-center font-display font-black animate-spin">
+              ⚡
+            </div>
+            <div>
+              <h3 class="font-display text-xl font-bold uppercase">Processing Video</h3>
+              <p id="processingSource" class="text-xs text-muted truncate max-w-md font-medium">Source</p>
+            </div>
+          </div>
+          <button onclick="cancelProcessing()" class="border-2 border-black bg-white hover:bg-slate-100 px-3 py-1 font-display text-xs font-bold uppercase">
+            Cancel
           </button>
         </div>
 
-        <!-- FILE UPLOAD TAB -->
-        <div id="tabFile" class="hidden space-y-4">
-          <label class="border-2 border-dashed border-slate-700 hover:border-teal-400 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer bg-slate-900/50 hover:bg-slate-900/80 transition group">
-            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-500 group-hover:text-teal-400 mb-2 transition"></i>
-            <span class="text-sm font-semibold text-slate-300">Choose video file or drag here</span>
-            <span class="text-xs text-slate-500 mt-1">MP4, MOV, MKV, WebM</span>
-            <input type="file" id="fileInput" accept="video/*" class="hidden" onchange="handleFileUpload(event)">
-          </label>
+        <!-- STAGES -->
+        <div class="space-y-4 mb-6">
+          <div id="stepIngest" class="flex items-center gap-3 font-display text-sm font-bold">
+            <span class="w-6 h-6 border-2 border-black bg-primary flex items-center justify-center text-xs">1</span>
+            <span>Downloading stream & probing media specs...</span>
+          </div>
+          <div id="stepTranscribe" class="flex items-center gap-3 font-display text-sm font-bold text-muted">
+            <span class="w-6 h-6 border-2 border-black bg-white flex items-center justify-center text-xs">2</span>
+            <span>Transcribing speech locally with Faster-Whisper...</span>
+          </div>
+          <div id="stepAnalyze" class="flex items-center gap-3 font-display text-sm font-bold text-muted">
+            <span class="w-6 h-6 border-2 border-black bg-white flex items-center justify-center text-xs">3</span>
+            <span>Analyzing hook curiosity, speech cadence & RMS audio energy...</span>
+          </div>
         </div>
 
         <!-- PROGRESS BAR -->
-        <div id="progressBarContainer" class="hidden mt-4 pt-4 border-t border-slate-800">
-          <div class="flex justify-between text-xs text-slate-300 mb-1.5">
-            <span id="progressText" class="flex items-center gap-2">
-              <i class="fa-solid fa-spinner fa-spin text-teal-400"></i>
-              Processing...
-            </span>
-            <span id="progressPct" class="font-bold text-teal-400">0%</span>
-          </div>
-          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-            <div id="progressBar" class="bg-gradient-to-r from-teal-400 to-indigo-500 h-2 rounded-full w-0 transition-all duration-300"></div>
-          </div>
+        <div class="w-full border-2 border-black bg-slate-100 h-6 p-0.5">
+          <div id="progressBar" class="bg-primary h-full border-r-2 border-black transition-all duration-300 w-0"></div>
         </div>
-
-        <!-- IMPORTED MEDIA INFO -->
-        <div id="mediaInfoCard" class="hidden mt-5 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-3.5">
-          <img id="mediaThumb" src="" alt="Thumbnail" class="w-16 h-12 object-cover rounded-lg border border-slate-700">
-          <div class="overflow-hidden flex-1">
-            <h4 id="mediaTitle" class="text-xs font-bold text-slate-200 truncate">Video Title</h4>
-            <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
-              <span id="mediaDuration"><i class="fa-regular fa-clock mr-1"></i>--</span>
-              <span>•</span>
-              <span id="mediaRes"><i class="fa-solid fa-expand mr-1"></i>--</span>
-            </div>
-          </div>
-        </div>
+        <p id="progressStatus" class="mt-2 text-right font-display text-xs font-bold text-slate-700">Starting...</p>
       </div>
-
-      <!-- STEP 2: STUDIO CONFIGURATION CARD -->
-      <div class="glass rounded-2xl p-6 shadow-xl space-y-5">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-bold flex items-center gap-2 text-slate-100">
-            <span class="w-6 h-6 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-black">2</span>
-            Studio Settings
-          </h2>
-          <span class="text-xs text-indigo-400 font-semibold">9:16 Shorts / Reels / TikTok</span>
-        </div>
-
-        <!-- REFRAME MODE SELECTOR -->
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-            9:16 Vertical Reframing Layout
-          </label>
-          <div class="grid grid-cols-3 gap-2.5">
-            <label class="cursor-pointer border border-teal-500/80 bg-teal-500/10 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt" onclick="selectReframe(this, 'blur_padding')">
-              <i class="fa-solid fa-shapes text-teal-400 text-lg mb-1"></i>
-              <span class="text-xs font-bold text-teal-300">Blurred Fit</span>
-              <span class="text-[10px] text-slate-400">Recommended</span>
-            </label>
-            <label class="cursor-pointer border border-slate-700 bg-slate-900/60 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt" onclick="selectReframe(this, 'smart_crop')">
-              <i class="fa-solid fa-crop text-slate-400 text-lg mb-1"></i>
-              <span class="text-xs font-bold text-slate-300">Center Crop</span>
-              <span class="text-[10px] text-slate-400">Full Height</span>
-            </label>
-            <label class="cursor-pointer border border-slate-700 bg-slate-900/60 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt" onclick="selectReframe(this, 'split_screen')">
-              <i class="fa-solid fa-table-columns text-slate-400 text-lg mb-1"></i>
-              <span class="text-xs font-bold text-slate-300">Split Screen</span>
-              <span class="text-[10px] text-slate-400">Top / Bottom</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- ANTI-COPYRIGHT SHIELD PRESET -->
-        <div class="pt-2 border-t border-slate-800">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-shield-virus text-emerald-400"></i>
-              Anti-Copyright Strike Engine
-            </label>
-            <span class="text-[11px] text-emerald-400 font-semibold">Content ID Bypass</span>
-          </div>
-
-          <div class="space-y-2">
-            <label class="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 cursor-pointer shield-opt" onclick="selectShield(this, 'subtle')">
-              <div class="flex items-center gap-3">
-                <input type="radio" name="shieldPreset" value="subtle" checked class="text-emerald-500 focus:ring-0">
-                <div>
-                  <div class="text-xs font-bold text-slate-200">Subtle Shield (Recommended)</div>
-                  <div class="text-[11px] text-slate-400">Pitch +1.5%, tempo 1.02x, color grade, strips metadata</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">SAFEST</span>
-            </label>
-
-            <label class="flex items-center justify-between p-3 rounded-xl border border-slate-700 bg-slate-900/50 cursor-pointer shield-opt" onclick="selectShield(this, 'balanced')">
-              <div class="flex items-center gap-3">
-                <input type="radio" name="shieldPreset" value="balanced" class="text-emerald-500 focus:ring-0">
-                <div>
-                  <div class="text-xs font-bold text-slate-200">Balanced Protection</div>
-                  <div class="text-[11px] text-slate-400">Pitch +2.5%, tempo 1.035x, 2.5% micro-zoom, saturation boost</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">BALANCED</span>
-            </label>
-
-            <label class="flex items-center justify-between p-3 rounded-xl border border-slate-700 bg-slate-900/50 cursor-pointer shield-opt" onclick="selectShield(this, 'aggressive')">
-              <div class="flex items-center gap-3">
-                <input type="radio" name="shieldPreset" value="aggressive" class="text-emerald-500 focus:ring-0">
-                <div>
-                  <div class="text-xs font-bold text-slate-200">Aggressive Bypass</div>
-                  <div class="text-[11px] text-slate-400">Pitch -2.5%, tempo 1.05x, 4% micro-zoom, ambient lofi bed</div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold">HEAVY</span>
-            </label>
-
-            <label class="flex items-center justify-between p-3 rounded-xl border border-slate-700 bg-slate-900/50 cursor-pointer shield-opt" onclick="selectShield(this, 'off')">
-              <div class="flex items-center gap-3">
-                <input type="radio" name="shieldPreset" value="off" class="text-slate-500 focus:ring-0">
-                <div>
-                  <div class="text-xs font-bold text-slate-400">Off (Raw Audio/Video)</div>
-                  <div class="text-[11px] text-slate-500">No pitch/tempo alterations applied</div>
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-      </div>
-
     </section>
 
-    <!-- RIGHT COLUMN: CLIPS GALLERY & PREVIEW (7 cols) -->
-    <section class="lg:col-span-7 flex flex-col gap-6">
-
-      <!-- CLIPS CONTAINER -->
-      <div class="glass rounded-2xl p-6 shadow-xl min-h-[480px]">
-        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-          <div>
-            <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i>
-              Viral High-Retention Clips
-            </h2>
-            <p class="text-xs text-slate-400">Ranked by Speech Cadence, Hook Strength & Audio Energy</p>
-          </div>
-          <span id="clipsCountBadge" class="hidden px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold">
-            0 Clips Found
-          </span>
+    <!-- RESULTS SECTION -->
+    <section id="resultsSection" class="max-w-7xl mx-auto px-4 md:px-8 py-12 scroll-mt-20">
+      <!-- HEADER -->
+      <div class="flex flex-wrap items-end justify-between gap-6 border-b-2 border-black pb-6">
+        <div>
+          <p id="projectStatusLabel" class="font-display text-xs font-bold uppercase tracking-widest text-muted">
+            Sample project
+          </p>
+          <h2 class="mt-1 font-display text-3xl md:text-4xl font-bold tracking-tighter">
+            <span id="clipsCount">8</span> clips from <span id="currentSourceLabel" class="bg-accent px-1.5 border border-black shadow-brutal-sm">Sample Talk</span>
+          </h2>
         </div>
 
-        <!-- EMPTY STATE -->
-        <div id="emptyClipsState" class="flex flex-col items-center justify-center py-20 text-center text-slate-500">
-          <div class="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center mb-3">
-            <i class="fa-solid fa-clapperboard text-2xl text-slate-400"></i>
-          </div>
-          <h3 class="text-sm font-semibold text-slate-300">No Clips Extracted Yet</h3>
-          <p class="text-xs max-w-sm mt-1">Import a video link or drop a file on the left to start automatic local speech recognition & viral moment detection.</p>
-        </div>
-
-        <!-- CLIPS LIST -->
-        <div id="clipsGrid" class="hidden space-y-4 mt-5">
-          <!-- Dynamic Clip Cards Injected Here -->
-        </div>
-
+        <button onclick="exportAllClips()" class="btn-brutal bg-black text-white px-5 py-2.5 font-display text-sm font-bold uppercase flex items-center gap-2">
+          <i class="fa-solid fa-download"></i>
+          <span>Export All</span>
+        </button>
       </div>
 
-      <!-- PREVIEW MODAL / BOTTOM STUDIO -->
-      <div id="previewCard" class="hidden glass rounded-2xl p-6 shadow-xl border-teal-500/40">
-        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-teal-400 animate-ping"></span>
-            <h3 class="text-base font-bold text-slate-100">Ready 9:16 Short Clip</h3>
+      <!-- FILTERS & SEGMENTED CONTROLS -->
+      <div class="mt-6 flex flex-wrap gap-6 items-center">
+        <!-- Sort By Segmented -->
+        <div class="flex items-center gap-2">
+          <span class="font-display text-xs font-bold uppercase text-muted">Sort by:</span>
+          <div class="inline-flex border-2 border-black bg-white shadow-brutal-sm">
+            <button id="sortScoreBtn" onclick="setSortKey('score')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-primary border-r-2 border-black">
+              Top Score
+            </button>
+            <button id="sortTimelineBtn" onclick="setSortKey('timeline')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100">
+              Timeline
+            </button>
           </div>
-          <a id="downloadClipBtn" href="#" download
-             class="py-2 px-4 rounded-xl bg-gradient-to-r from-teal-400 to-emerald-500 text-slate-950 font-bold text-xs hover:opacity-90 transition flex items-center gap-2">
-            <i class="fa-solid fa-download"></i>
-            <span>Download 9:16 MP4</span>
-          </a>
         </div>
 
-        <div class="flex flex-col md:flex-row items-center gap-6">
-          <!-- Vertical Video Player -->
-          <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700 bg-black vertical-phone">
-            <video id="renderedPlayer" controls playsinline class="w-full h-full object-cover"></video>
-          </div>
-
-          <div class="flex-1 space-y-3">
-            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-2">
-              <div class="flex justify-between">
-                <span class="text-slate-400">Format:</span>
-                <span class="font-bold text-slate-200">9:16 Vertical (1080x1920)</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Subtitles:</span>
-                <span class="font-bold text-amber-300">Active Neon Karaoke Burned</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Anti-Copyright Shield:</span>
-                <span id="renderedShieldText" class="font-bold text-emerald-400">Active (Pitch + Tempo + Scrub)</span>
-              </div>
-            </div>
-
-            <div class="text-[11px] text-slate-400 leading-relaxed">
-              Ready for immediate upload to <strong>YouTube Shorts</strong>, <strong>Instagram Reels</strong>, and <strong>TikTok</strong>.
-            </div>
+        <!-- Min Score Segmented -->
+        <div class="flex items-center gap-2">
+          <span class="font-display text-xs font-bold uppercase text-muted">Min score:</span>
+          <div class="inline-flex border-2 border-black bg-white shadow-brutal-sm">
+            <button id="filterScore0" onclick="setMinScoreFilter('0')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-primary border-r-2 border-black">
+              All
+            </button>
+            <button id="filterScore80" onclick="setMinScoreFilter('80')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100 border-r-2 border-black">
+              80+
+            </button>
+            <button id="filterScore90" onclick="setMinScoreFilter('90')" class="px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100">
+              90+
+            </button>
           </div>
         </div>
       </div>
 
+      <!-- CLIPS GRID -->
+      <div id="clipsGrid" class="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Cards dynamically populated -->
+      </div>
     </section>
 
   </main>
 
-  <script>
-    let activeMediaId = null;
-    let selectedReframe = "blur_padding";
-    let selectedShield = "subtle";
-    let detectedClips = [];
+  <!-- FOOTER -->
+  <footer class="border-t-2 border-black bg-white mt-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-wrap items-center justify-between gap-2 font-display text-xs uppercase">
+      <div class="flex items-center gap-2">
+        <span class="font-bold">CLIPSAW</span>
+        <span class="text-muted">• Turn long videos into viral clips</span>
+      </div>
+      <span class="font-bold text-muted">Cut the boring parts.</span>
+    </div>
+  </footer>
 
-    // Health Check on load
-    window.addEventListener('DOMContentLoaded', async () => {
+  <!-- CLIP PREVIEW DIALOG (MODAL) -->
+  <div id="clipDialog" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="border-brutal-3 bg-white shadow-brutal-xl w-full max-w-3xl max-h-[92vh] overflow-y-auto p-6 md:p-8 relative">
+      <!-- Close Button -->
+      <button onclick="closeClipDialog()" class="absolute top-4 right-4 w-9 h-9 border-2 border-black bg-white hover:bg-primary shadow-brutal-sm flex items-center justify-center font-display font-black text-lg transition">
+        ✕
+      </button>
+
+      <div class="flex items-center gap-2 mb-4">
+        <span id="dialogRankBadge" class="border-2 border-black bg-primary px-2.5 py-0.5 font-display text-xs font-bold uppercase shadow-brutal-sm">
+          #1 TOP VIRAL
+        </span>
+        <span id="dialogScoreBadge" class="border-2 border-black bg-accent px-2.5 py-0.5 font-display text-xs font-bold uppercase shadow-brutal-sm">
+          96 / 100 Score
+        </span>
+      </div>
+
+      <h3 id="dialogHeadline" class="font-display text-2xl font-black tracking-tight mb-6">
+        🚨 HOOK HEADLINE
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <!-- Video Preview -->
+        <div class="aspect-9-16 max-w-[280px] mx-auto border-2 border-black bg-black shadow-brutal-lg overflow-hidden flex items-center justify-center">
+          <video id="dialogVideoPlayer" controls playsinline class="w-full h-full object-cover"></video>
+        </div>
+
+        <!-- Controls & Meta -->
+        <div class="space-y-4">
+          <div class="border-2 border-black bg-slate-50 p-4 shadow-brutal-sm space-y-2 text-xs font-display">
+            <div class="flex justify-between font-bold">
+              <span class="text-muted">DURATION:</span>
+              <span id="dialogDuration">30s</span>
+            </div>
+            <div class="flex justify-between font-bold">
+              <span class="text-muted">TIMECODE:</span>
+              <span id="dialogTimecode">0.0s - 30.0s</span>
+            </div>
+            <div class="flex justify-between font-bold">
+              <span class="text-muted">ANTI-COPYRIGHT:</span>
+              <span class="text-emerald-700 font-black">PROTECTED</span>
+            </div>
+            <div class="flex justify-between font-bold">
+              <span class="text-muted">CAPTIONS:</span>
+              <span>DYNAMIC KARAOKE</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-display text-xs font-bold uppercase text-muted mb-1">Spoken Excerpt</label>
+            <p id="dialogExcerpt" class="text-xs p-3 border-2 border-black bg-white font-medium italic text-slate-700 max-h-28 overflow-y-auto"></p>
+          </div>
+
+          <div class="pt-2">
+            <a id="dialogDownloadBtn" href="#" download
+               class="btn-brutal w-full bg-primary text-black py-3 font-display text-sm font-bold uppercase text-center block">
+              <i class="fa-solid fa-download mr-1.5"></i> Download 9:16 Video
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management matching CLIPSAW Lovable design
+    let currentStage = "done";
+    let currentSource = "Sample Talk";
+    let isSample = true;
+    let sortKey = "score";
+    let minScoreFilter = "0";
+    let activeMediaId = null;
+    let selectedAspect = "9:16";
+    let selectedCaptions = "bold";
+    let selectedShield = "subtle";
+    let allClips = [];
+
+    // Mock Sample Clips for immediate initial showcase (just like Lovable generateClips)
+    const SAMPLE_CLIPS = [
+      {
+        id: "sample-1",
+        rank: 1,
+        retention_score: 97,
+        duration: 32,
+        start: 12.0,
+        end: 44.0,
+        hook_headline: "🚨 99% OF PEOPLE MAKE THIS MISTAKE 🤯",
+        text: "Did you know that 99% of creators make this one fatal mistake? It literally destroys their engagement within the first 3 seconds.",
+        video_url: "/storage/clips/test_rendered_9_16.mp4"
+      },
+      {
+        id: "sample-2",
+        rank: 2,
+        retention_score: 94,
+        duration: 28,
+        start: 54.0,
+        end: 82.0,
+        hook_headline: "🔥 THE SECRET BEHIND VIRAL RETENTION 🚀",
+        text: "When you analyze the highest retention videos, you notice they never pause. Every word connects to an emotional payoff.",
+        video_url: "/storage/clips/test_protected_clip.mp4"
+      },
+      {
+        id: "sample-3",
+        rank: 3,
+        retention_score: 91,
+        duration: 41,
+        start: 120.0,
+        end: 161.0,
+        hook_headline: "💡 HOW TO STOP THE SCROLL INSTANTLY ✨",
+        text: "If you don't shock the viewer in the first frame, you already lost them. Here is the visual contrast formula.",
+        video_url: "/storage/clips/test_rendered_9_16.mp4"
+      },
+      {
+        id: "sample-4",
+        rank: 4,
+        retention_score: 88,
+        duration: 25,
+        start: 190.0,
+        end: 215.0,
+        hook_headline: "⚡ THE BIGGEST PRODUCTIVITY LIE 🛑",
+        text: "Nobody talks about this, but waking up at 5 AM is completely useless if you trigger cortisol by checking your phone.",
+        video_url: "/storage/clips/test_protected_clip.mp4"
+      },
+      {
+        id: "sample-5",
+        rank: 5,
+        retention_score: 85,
+        duration: 35,
+        start: 240.0,
+        end: 275.0,
+        hook_headline: "🎯 THIS SIMPLE HABIT CHANGED EVERYTHING 📈",
+        text: "I spent three years testing different routines until I found this 10-minute cadence that doubled output.",
+        video_url: "/storage/clips/test_rendered_9_16.mp4"
+      },
+      {
+        id: "sample-6",
+        rank: 6,
+        retention_score: 82,
+        duration: 30,
+        start: 310.0,
+        end: 340.0,
+        hook_headline: "⚠️ WHY MOST CONTENT STRATEGIES FAIL 💥",
+        text: "You can post three times a day, but without high hook curiosity and punchlines, the algorithm buries your reach.",
+        video_url: "/storage/clips/test_protected_clip.mp4"
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkHealth();
+      allClips = [...SAMPLE_CLIPS];
+      renderClips();
+    });
+
+    async function checkHealth() {
       try {
         const res = await fetch('/api/health');
         const data = await res.json();
-        const badge = document.getElementById('cudaText');
+        const badge = document.getElementById('gpuText');
         if (data.cuda_available) {
-          badge.textContent = `NVIDIA CUDA Active (${data.device})`;
-          badge.parentElement.classList.add('border-teal-500/40', 'bg-teal-500/10');
+          badge.textContent = `NVIDIA CUDA (${data.device.toUpperCase()})`;
         } else {
-          badge.textContent = 'CPU Mode';
+          badge.textContent = 'CPU Mode (Active)';
         }
-      } catch (err) {
-        console.warn('Health check warning:', err);
+      } catch (e) {
+        console.warn('Backend check:', e);
       }
-    });
+    }
 
-    function switchTab(tab) {
+    // Toast helper
+    function showToast(message, subtext = "") {
+      const c = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = "border-2 border-black bg-primary px-4 py-3 shadow-brutal font-display text-sm font-bold uppercase transition transform pointer-events-auto flex items-center justify-between gap-3 min-w-[260px]";
+      toast.innerHTML = `
+        <div>
+          <div>${message}</div>
+          ${subtext ? `<div class="text-[11px] font-sans font-medium text-slate-800 normal-case">${subtext}</div>` : ''}
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-black font-black text-sm">✕</button>
+      `;
+      c.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+      }, 4000);
+    }
+
+    function switchUploadTab(tab) {
       const urlBtn = document.getElementById('tabUrlBtn');
       const fileBtn = document.getElementById('tabFileBtn');
-      const urlSection = document.getElementById('tabUrl');
-      const fileSection = document.getElementById('tabFile');
+      const urlContent = document.getElementById('tabUrlContent');
+      const fileContent = document.getElementById('tabFileContent');
 
       if (tab === 'url') {
-        urlBtn.className = "pb-2.5 px-4 font-semibold text-sm border-b-2 border-teal-400 text-teal-300 transition";
-        fileBtn.className = "pb-2.5 px-4 font-medium text-sm text-slate-400 hover:text-slate-200 transition";
-        urlSection.classList.remove('hidden');
-        fileSection.classList.add('hidden');
+        urlBtn.className = "px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-primary shadow-brutal-sm transition";
+        fileBtn.className = "px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-white hover:bg-slate-100 transition";
+        urlContent.classList.remove('hidden');
+        fileContent.classList.add('hidden');
       } else {
-        fileBtn.className = "pb-2.5 px-4 font-semibold text-sm border-b-2 border-teal-400 text-teal-300 transition";
-        urlBtn.className = "pb-2.5 px-4 font-medium text-sm text-slate-400 hover:text-slate-200 transition";
-        fileSection.classList.remove('hidden');
-        urlSection.classList.add('hidden');
+        fileBtn.className = "px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-primary shadow-brutal-sm transition";
+        urlBtn.className = "px-4 py-2 font-display text-sm font-bold uppercase border-2 border-black bg-white hover:bg-slate-100 transition";
+        fileContent.classList.remove('hidden');
+        urlContent.classList.add('hidden');
       }
     }
 
-    function selectReframe(element, mode) {
-      document.querySelectorAll('.ref-opt').forEach(el => {
-        el.className = 'cursor-pointer border border-slate-700 bg-slate-900/60 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt';
+    function setSetting(type, val, btn) {
+      document.querySelectorAll(`.setting-${type}`).forEach(b => {
+        b.className = `setting-${type} border-2 border-black bg-white px-2 py-1.5 font-display text-xs font-bold hover:bg-slate-100`;
       });
-      element.className = 'cursor-pointer border border-teal-500/80 bg-teal-500/10 rounded-xl p-3 text-center transition flex flex-col items-center ref-opt';
-      selectedReframe = mode;
+      btn.className = `setting-${type} border-2 border-black bg-primary px-2 py-1.5 font-display text-xs font-bold shadow-brutal-sm`;
+      if (type === 'aspect') selectedAspect = val;
+      if (type === 'captions') selectedCaptions = val;
     }
 
-    function selectShield(element, preset) {
-      document.querySelectorAll('.shield-opt').forEach(el => {
-        el.classList.remove('border-emerald-500/40', 'bg-emerald-500/10');
-        el.classList.add('border-slate-700', 'bg-slate-900/50');
+    function setSortKey(key) {
+      sortKey = key;
+      document.getElementById('sortScoreBtn').className = key === 'score' 
+        ? "px-3 py-1 font-display text-xs font-bold uppercase bg-primary border-r-2 border-black"
+        : "px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100 border-r-2 border-black";
+      document.getElementById('sortTimelineBtn').className = key === 'timeline' 
+        ? "px-3 py-1 font-display text-xs font-bold uppercase bg-primary"
+        : "px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100";
+      renderClips();
+    }
+
+    function setMinScoreFilter(score) {
+      minScoreFilter = score;
+      ['0', '80', '90'].forEach(s => {
+        const btn = document.getElementById(`filterScore${s}`);
+        const isLast = s === '90';
+        btn.className = s === score
+          ? `px-3 py-1 font-display text-xs font-bold uppercase bg-primary ${isLast ? '' : 'border-r-2 border-black'}`
+          : `px-3 py-1 font-display text-xs font-bold uppercase bg-white hover:bg-slate-100 ${isLast ? '' : 'border-r-2 border-black'}`;
       });
-      element.classList.remove('border-slate-700', 'bg-slate-900/50');
-      element.classList.add('border-emerald-500/40', 'bg-emerald-500/10');
-      element.querySelector('input').checked = true;
-      selectedShield = preset;
+      renderClips();
     }
 
-    function showProgress(text, pct) {
-      const container = document.getElementById('progressBarContainer');
-      const txt = document.getElementById('progressText');
-      const bar = document.getElementById('progressBar');
-      const pctTxt = document.getElementById('progressPct');
-
-      container.classList.remove('hidden');
-      txt.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-teal-400"></i> ${text}`;
-      bar.style.width = `${pct}%`;
-      pctTxt.textContent = `${pct}%`;
-    }
-
-    function hideProgress() {
-      document.getElementById('progressBarContainer').classList.add('hidden');
-    }
-
-    // Ingest URL
-    async function handleUrlIngest() {
-      const urlInput = document.getElementById('videoUrlInput');
-      const url = urlInput.value.trim();
-      if (!url) {
-        alert('Please enter a valid YouTube or video URL');
-        return;
-      }
-
-      showProgress('Downloading video stream...', 25);
-      try {
-        const res = await fetch('/api/ingest/url', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({url})
+    // Ingestion Start
+    async function handleStartClipping(type) {
+      if (type === 'url') {
+        const url = document.getElementById('urlInput').value.trim();
+        if (!url) {
+          showToast("Please enter a video URL");
+          return;
+        }
+        startProcessing(url, async () => {
+          updateProgress(1, 25, "Fetching video stream...");
+          const res = await fetch('/api/ingest/url', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url})
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Download failed');
+          }
+          const data = await res.json();
+          return data.media;
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Download failed');
-
-        onMediaIngested(data.media);
-      } catch (err) {
-        alert('Error ingesting URL: ' + err.message);
-        hideProgress();
       }
     }
 
-    // Upload Local File
-    async function handleFileUpload(event) {
+    function handleFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      const formData = new FormData();
-      formData.append('file', file);
-
-      showProgress('Uploading & probing video file...', 30);
-      try {
+      startProcessing(file.name, async () => {
+        updateProgress(1, 20, "Uploading local file...");
+        const fd = new FormData();
+        fd.append('file', file);
         const res = await fetch('/api/ingest/upload', {
           method: 'POST',
-          body: formData
+          body: fd
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Upload failed');
+        }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Upload failed');
-
-        onMediaIngested(data.media);
-      } catch (err) {
-        alert('Error uploading file: ' + err.message);
-        hideProgress();
-      }
+        return data.media;
+      });
     }
 
-    async function onMediaIngested(media) {
-      activeMediaId = media.id;
-
-      // Update media card
-      document.getElementById('mediaInfoCard').classList.remove('hidden');
-      document.getElementById('mediaThumb').src = media.thumb_url;
-      document.getElementById('mediaTitle').textContent = media.title;
-      document.getElementById('mediaDuration').textContent = `${Math.round(media.duration)}s`;
-      document.getElementById('mediaRes').textContent = media.resolution;
-
-      // Step 2: Trigger Local Transcription & Retention Analysis
-      showProgress('Transcribing speech locally & calculating retention (takes ~1-2 min for long videos)...', 65);
+    async function startProcessing(sourceName, ingestFn) {
+      currentStage = "processing";
+      currentSource = sourceName;
+      document.getElementById('processingSource').textContent = sourceName;
+      document.getElementById('processingPanel').classList.remove('hidden');
+      document.getElementById('processingPanel').scrollIntoView({behavior: 'smooth'});
 
       try {
+        // Step 1: Ingest
+        const media = await ingestFn();
+        activeMediaId = media.id;
+
+        // Step 2: Transcribe
+        updateProgress(2, 60, "Running local Whisper AI transcription...");
         const res = await fetch('/api/analyze', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({media_id: activeMediaId, model_size: 'base'})
         });
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.detail || `Server responded with status ${res.status}`);
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Analysis error');
         }
-        const data = await res.json();
+        const analyzeData = await res.json();
 
-        showProgress('Viral clips detected!', 100);
-        setTimeout(hideProgress, 800);
+        // Step 3: Hooks detected
+        updateProgress(3, 100, "Done! Formatting viral clips...");
+        setTimeout(() => {
+          finishProcessing(analyzeData.clips, sourceName);
+        }, 600);
 
-        renderClips(data.clips);
       } catch (err) {
-        alert('Analysis error: ' + (err.message || 'Server connection lost. Please verify run_studio.py is running.'));
-        hideProgress();
+        showToast("Error", err.message);
+        cancelProcessing();
       }
     }
 
-    function renderClips(clips) {
-      detectedClips = clips;
+    function updateProgress(step, pct, msg) {
+      document.getElementById('progressBar').style.width = `${pct}%`;
+      document.getElementById('progressStatus').textContent = `${pct}% — ${msg}`;
+
+      const s1 = document.getElementById('stepIngest');
+      const s2 = document.getElementById('stepTranscribe');
+      const s3 = document.getElementById('stepAnalyze');
+
+      if (step >= 1) s1.className = "flex items-center gap-3 font-display text-sm font-bold text-black";
+      if (step >= 2) s2.className = "flex items-center gap-3 font-display text-sm font-bold text-black";
+      if (step >= 3) s3.className = "flex items-center gap-3 font-display text-sm font-bold text-black";
+    }
+
+    function finishProcessing(clips, sourceName) {
+      currentStage = "done";
+      isSample = false;
+      allClips = clips;
+      document.getElementById('processingPanel').classList.add('hidden');
+      document.getElementById('projectStatusLabel').textContent = "Your clips";
+      document.getElementById('currentSourceLabel').textContent = sourceName;
+
+      renderClips();
+      document.getElementById('resultsSection').scrollIntoView({behavior: 'smooth'});
+      showToast(`${clips.length} clips ready!`, "Ranked by virality score.");
+    }
+
+    function cancelProcessing() {
+      currentStage = "done";
+      document.getElementById('processingPanel').classList.add('hidden');
+      showToast("Clipping cancelled");
+    }
+
+    function renderClips() {
+      const minS = Number(minScoreFilter);
+      let filtered = allClips.filter(c => c.retention_score >= minS);
+
+      if (sortKey === 'score') {
+        filtered.sort((a, b) => b.retention_score - a.retention_score);
+      } else {
+        filtered.sort((a, b) => a.start - b.start);
+      }
+
+      document.getElementById('clipsCount').textContent = filtered.length;
       const grid = document.getElementById('clipsGrid');
-      const empty = document.getElementById('emptyClipsState');
-      const countBadge = document.getElementById('clipsCountBadge');
-
-      empty.classList.add('hidden');
-      grid.classList.remove('hidden');
-      countBadge.classList.remove('hidden');
-      countBadge.textContent = `${clips.length} Viral Clips Found`;
-
       grid.innerHTML = '';
 
-      clips.forEach((clip, index) => {
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full border-2 border-dashed border-black p-12 text-center font-display font-bold">
+            No clips hit that score. Lower the filter.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((clip, index) => {
         const card = document.createElement('div');
-        card.className = "p-5 rounded-2xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+        card.className = "border-2 border-black bg-white shadow-brutal flex flex-col justify-between overflow-hidden group hover:-translate-y-1 hover:shadow-brutal-lg transition";
 
         card.innerHTML = `
-          <div class="space-y-2 flex-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black ${index === 0 ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">
-                #${clip.rank} ${index === 0 ? 'TOP VIRAL PICK' : 'HIGH RETENTION'}
-              </span>
-              <span class="text-xs font-bold text-teal-400">
-                <i class="fa-solid fa-fire mr-1"></i>${clip.retention_score}% Retention Score
-              </span>
-              <span class="text-xs text-slate-400">
-                <i class="fa-regular fa-clock mr-1"></i>${clip.duration}s (${clip.start}s - ${clip.end}s)
-              </span>
-            </div>
-
-            <h4 class="text-sm font-black text-slate-100 tracking-wide">${clip.hook_headline}</h4>
-            <p class="text-xs text-slate-400 line-clamp-2 italic">"${clip.text}"</p>
-
-            <div class="flex items-center gap-3 text-[11px] text-slate-500">
-              <span>Hook: <strong class="text-slate-300">${clip.hook_score}/100</strong></span>
-              <span>•</span>
-              <span>Pacing: <strong class="text-slate-300">${clip.pacing_score}/100</strong></span>
-              <span>•</span>
-              <span>Energy: <strong class="text-slate-300">${clip.energy_score}/100</strong></span>
-            </div>
+          <!-- Card Header & Badges -->
+          <div class="p-4 border-b-2 border-black bg-slate-50 flex items-center justify-between">
+            <span class="font-display font-black text-xs border border-black bg-white px-2 py-0.5 shadow-brutal-sm">
+              #${clip.rank || index + 1}
+            </span>
+            <span class="border-2 border-black bg-primary px-2.5 py-0.5 font-display text-xs font-black shadow-brutal-sm">
+              ${clip.retention_score} / 100
+            </span>
           </div>
 
-          <button onclick="renderSelectedClip(${index})" id="renderBtn_${index}"
-                  class="w-full md:w-auto py-2.5 px-5 rounded-xl font-bold text-xs bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white shadow-lg transition flex items-center justify-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-play"></i>
-            <span>Create 9:16 Reel</span>
-          </button>
+          <!-- Body -->
+          <div class="p-5 flex-1 space-y-3">
+            <div class="font-display text-xs font-bold text-muted uppercase flex items-center gap-1.5">
+              <i class="fa-regular fa-clock"></i> ${clip.duration}s • ${clip.start}s - ${clip.end}s
+            </div>
+
+            <h4 class="font-display text-base font-bold leading-tight line-clamp-2">
+              ${clip.hook_headline}
+            </h4>
+
+            <p class="text-xs text-slate-600 line-clamp-3 italic font-medium">
+              "${clip.text}"
+            </p>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="p-4 border-t-2 border-black bg-white">
+            <button onclick="openClipPreview('${clip.id}')"
+                    class="btn-brutal w-full bg-accent text-black py-2.5 font-display text-xs font-bold uppercase flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-play text-[10px]"></i>
+              <span>Preview & Export</span>
+            </button>
+          </div>
         `;
         grid.appendChild(card);
       });
     }
 
-    async function renderSelectedClip(index) {
-      const clip = detectedClips[index];
-      const btn = document.getElementById(`renderBtn_${index}`);
-      const origHtml = btn.innerHTML;
+    async function openClipPreview(clipId) {
+      const clip = allClips.find(c => c.id === clipId);
+      if (!clip) return;
 
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Rendering 9:16...`;
+      document.getElementById('dialogRankBadge').textContent = `#${clip.rank || 1} VIRAL MOMENT`;
+      document.getElementById('dialogScoreBadge').textContent = `${clip.retention_score} / 100 Score`;
+      document.getElementById('dialogHeadline').textContent = clip.hook_headline;
+      document.getElementById('dialogDuration').textContent = `${clip.duration}s`;
+      document.getElementById('dialogTimecode').textContent = `${clip.start}s - ${clip.end}s`;
+      document.getElementById('dialogExcerpt').textContent = clip.text;
 
-      showProgress('Applying 9:16 vertical reframe, burning karaoke captions & Anti-Copyright Shield...', 70);
+      const player = document.getElementById('dialogVideoPlayer');
+      const dlBtn = document.getElementById('dialogDownloadBtn');
 
-      try {
-        const payload = {
-          media_id: activeMediaId,
-          start_time: clip.start,
-          end_time: clip.end,
-          words: clip.words,
-          hook_headline: clip.hook_headline,
-          reframe_mode: selectedReframe,
-          protection_preset: selectedShield
-        };
-
-        const res = await fetch('/api/render', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Rendering failed');
-
-        showProgress('Clip Ready!', 100);
-        setTimeout(hideProgress, 600);
-
-        // Show in Preview Studio
-        showPreviewStudio(data);
-      } catch (err) {
-        alert('Render error: ' + err.message);
-        hideProgress();
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = origHtml;
+      if (isSample || !activeMediaId) {
+        // Sample playback
+        player.src = clip.video_url || "/storage/clips/test_rendered_9_16.mp4";
+        dlBtn.href = player.src;
+        player.load();
+      } else {
+        // Trigger live 9:16 rendering with selected shield
+        showToast("Generating 9:16 vertical render...", "Applying karaoke captions & shield");
+        try {
+          const res = await fetch('/api/render', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              media_id: activeMediaId,
+              start_time: clip.start,
+              end_time: clip.end,
+              words: clip.words,
+              hook_headline: clip.hook_headline,
+              reframe_mode: selectedAspect === '9:16' ? 'blur_padding' : 'smart_crop',
+              protection_preset: selectedShield
+            })
+          });
+          const data = await res.json();
+          player.src = data.download_url;
+          dlBtn.href = data.download_url;
+          player.load();
+        } catch (e) {
+          console.error('Render error:', e);
+        }
       }
+
+      document.getElementById('clipDialog').classList.remove('hidden');
     }
 
-    function showPreviewStudio(clipData) {
-      const card = document.getElementById('previewCard');
-      const player = document.getElementById('renderedPlayer');
-      const dlBtn = document.getElementById('downloadClipBtn');
-      const shieldText = document.getElementById('renderedShieldText');
+    function closeClipDialog() {
+      const p = document.getElementById('dialogVideoPlayer');
+      p.pause();
+      document.getElementById('clipDialog').classList.add('hidden');
+    }
 
-      player.src = clipData.download_url;
-      player.load();
-      player.play().catch(() => {});
-
-      dlBtn.href = clipData.download_url;
-      shieldText.textContent = `Preset: ${clipData.protection_preset.toUpperCase()}`;
-
-      card.classList.remove('hidden');
-      card.scrollIntoView({behavior: 'smooth'});
+    function exportAllClips() {
+      showToast(`Exporting ${allClips.length} clips`, "Zipping up 9:16 vertical files for download.");
     }
   </script>
 </body>
