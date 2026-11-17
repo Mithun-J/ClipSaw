@@ -13,15 +13,30 @@ node_modules/
 dist/
 .cache/
 
-# Media processing / downloads / clips temp storage
-downloads/
-output/
-temp/
+# Media processing & downloads storage (ignore contents but keep directory structure)
+storage/downloads/*
+!storage/downloads/.gitkeep
+
+storage/audio/*
+!storage/audio/.gitkeep
+
+storage/clips/*
+!storage/clips/.gitkeep
+
+storage/temp/*
+!storage/temp/.gitkeep
+
+storage/models/*
+!storage/models/.gitkeep
+
 *.mp4
 *.mp3
 *.wav
 *.mkv
 *.webm
+*.bin
+*.part
+*.ytdl
 
 # Environment variables & secrets
 .env
