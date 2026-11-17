@@ -1,6 +1,7 @@
 """
 video_processor.py - End-to-end rendering pipeline that extracts slices,
-applies 9:16 vertical reframing, and burns dynamic karaoke subtitles.
+applies 9:16 vertical reframing, burns dynamic karaoke subtitles,
+and applies multi-layer anti-copyright protection.
 """
 
 import os
@@ -9,6 +10,7 @@ import uuid
 from typing import Any, Dict, List, Optional
 from backend.reframe import VideoReframer
 from backend.subtitle_generator import SubtitleGenerator
+from backend.copyright_shield import CopyrightShield
 from backend.media_utils import probe_video
 
 
@@ -30,10 +32,13 @@ class VideoProcessor:
         words: Optional[List[Dict[str, Any]]] = None,
         hook_headline: Optional[str] = None,
         reframe_mode: str = "blur_padding",
+        protection_preset: str = "subtle",
+        custom_protection: Optional[Dict[str, Any]] = None,
         output_clip_path: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Slice video segment, reframe to 9:16 vertical, and burn in karaoke subtitles.
+        Slice video segment, reframe to 9:16 vertical, burn in karaoke subtitles,
+        and apply transformative anti-copyright protection.
         """
         if not os.path.exists(source_video_path):
             raise FileNotFoundError(f"Source video not found: {source_video_path}")
@@ -46,7 +51,13 @@ class VideoProcessor:
 
         os.makedirs(os.path.dirname(os.path.abspath(output_clip_path)), exist_ok=True)
 
-        # 1. Generate subtitle .ass file if words or headline provided
+        # 1. Initialize Anti-Copyright Shield
+        shield = CopyrightShield(preset=protection_preset, custom_overrides=custom_protection)
+        video_shield_filter = shield.get_video_filter_chain()
+        audio_shield_filter = shield.get_audio_filter_chain()
+        metadata_args = shield.get_ffmpeg_metadata_args()
+
+        # 2. Generate subtitle .ass file if words or headline provided
         subtitle_ass_path = None
         if words or hook_headline:
             subtitle_ass_path = os.path.join(self.temp_dir, f"sub_{clip_id}.ass")
@@ -58,13 +69,14 @@ class VideoProcessor:
                 duration=duration
             )
 
-        # 2. Build FFmpeg filter graph
+        # 3. Build FFmpeg filter graph
         filter_graph = self.reframer.build_filter_graph(
             mode=reframe_mode,
-            subtitle_ass_path=subtitle_ass_path
+            subtitle_ass_path=subtitle_ass_path,
+            video_shield_filter=video_shield_filter
         )
 
-        # 3. Assemble FFmpeg slicing and rendering command
+        # 4. Assemble FFmpeg slicing, filtering, and rendering command
         cmd = [
             "ffmpeg",
             "-y",
@@ -72,8 +84,19 @@ class VideoProcessor:
             "-to", f"{end_time:.3f}",
             "-i", source_video_path,
             "-filter_complex", filter_graph,
-            "-map", "[v]",
-            "-map", "0:a?",
+            "-map", "[v]"
+        ]
+
+        if audio_shield_filter:
+            cmd.extend(["-af", audio_shield_filter])
+        else:
+            cmd.extend(["-map", "0:a?"])
+
+        # Metadata stripping arguments
+        cmd.extend(metadata_args)
+
+        # Video/Audio encoding options
+        cmd.extend([
             "-c:v", "libx264",
             "-preset", "veryfast",
             "-crf", "22",
@@ -82,7 +105,7 @@ class VideoProcessor:
             "-b:a", "192k",
             "-movflags", "+faststart",
             output_clip_path
-        ]
+        ])
 
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if result.returncode != 0:
@@ -99,5 +122,6 @@ class VideoProcessor:
             "width": meta["width"],
             "height": meta["height"],
             "is_vertical": meta["is_vertical"],
+            "protection_preset": protection_preset,
             "subtitle_path": subtitle_ass_path
         }
