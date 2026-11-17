@@ -1,5 +1,6 @@
 """
 ingestion.py - Universal ingestion service for local video files and web video URLs (YouTube, etc.).
+Includes robust YouTube anti-bot and client fallback mechanisms.
 """
 
 import os
@@ -66,7 +67,8 @@ class IngestionService:
 
     def ingest_url(self, url: str, progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> Dict[str, Any]:
         """
-        Download remote video URL via yt-dlp, probe metadata, and extract normalized audio.
+        Download remote video URL via yt-dlp with multi-client fallback (android, ios, web),
+        probe metadata, and extract normalized audio.
         """
         try:
             import yt_dlp
@@ -88,25 +90,44 @@ class IngestionService:
                     "eta": d.get("eta", 0)
                 })
 
+        # yt-dlp options configured with player_client fallback to bypass YouTube's
+        # bot blocks and "This video is not available" errors.
         ydl_opts = {
-            "format": "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best",
+            "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
             "outtmpl": temp_template,
             "merge_output_format": "mp4",
             "progress_hooks": [hook],
+            "noplaylist": True,
             "quiet": True,
-            "no_warnings": True
+            "no_warnings": True,
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["android", "ios", "web"]
+                }
+            },
+            "http_headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            }
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             downloaded_file = ydl.prepare_filename(info)
-            if not downloaded_file.endswith(".mp4"):
-                downloaded_file = os.path.splitext(downloaded_file)[0] + ".mp4"
 
         if not os.path.exists(downloaded_file):
-            # Scan downloads dir for matching prefix
+            base_no_ext = os.path.splitext(downloaded_file)[0]
+            for ext in [".mp4", ".mkv", ".webm"]:
+                if os.path.exists(base_no_ext + ext):
+                    downloaded_file = base_no_ext + ext
+                    break
+
+        if not os.path.exists(downloaded_file):
             prefix = f"{media_id}_"
-            candidates = [os.path.join(self.downloads_dir, f) for f in os.listdir(self.downloads_dir) if f.startswith(prefix)]
+            candidates = [
+                os.path.join(self.downloads_dir, f)
+                for f in os.listdir(self.downloads_dir)
+                if f.startswith(prefix) and not f.endswith(".part") and not f.endswith(".ytdl")
+            ]
             if candidates:
                 downloaded_file = candidates[0]
             else:
